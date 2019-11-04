@@ -55,5 +55,4 @@ public class Handler implements RequestHandler<S3Event, String> {
         return "ok";
 
     }
-
 }
