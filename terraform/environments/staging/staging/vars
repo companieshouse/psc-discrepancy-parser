@@ -5,3 +5,4 @@ log_level = "debug"
 psc_discrepancy_bucket = "aws-glue-datalakepre"
 workspace_key_prefix = "psc-discrepancy-parser"
 state_file_name = "psc-discrepancy-parser.tfstate"
+release_bucket_name = “ch-service-staging-release.ch.gov.uk”
