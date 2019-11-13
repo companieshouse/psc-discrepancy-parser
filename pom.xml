@@ -6,7 +6,7 @@
 
     <groupId>uk.gov.companieshouse</groupId>
     <artifactId>psc-discrepancy-parser</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>unversioned</version>
     <packaging>jar</packaging>
     <name>psc-discrepancy-parser</name>
 
@@ -24,6 +24,10 @@
         <!-- Java -->
         <java.version>1.8</java.version>
 
+        <!-- JUnit testing -->
+        <junit-jupiter-engine.version>5.2.0</junit-jupiter-engine.version>
+        <mockito-junit-jupiter.version>2.18.0</mockito-junit-jupiter.version>
+      
         <!-- Sonar -->
         <sonar-maven-plugin.version>3.4.0.905</sonar-maven-plugin.version>
         <sonar.host.url>${CODE_ANALYSIS_HOST_URL}</sonar.host.url>
@@ -55,6 +59,19 @@
             <artifactId>aws-java-sdk-s3</artifactId>
             <version>1.11.642</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+            <version>${junit-jupiter-engine.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework/spring-test -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+            <version>${mockito-junit-jupiter.version}</version>
         </dependency>
         <dependency>
             <groupId>org.sonarsource.scanner.maven</groupId>
