@@ -10,6 +10,12 @@
     <packaging>jar</packaging>
     <name>psc-discrepancy-parser</name>
 
+    <parent>
+        <groupId>uk.gov.companieshouse</groupId>
+        <artifactId>companies-house-parent</artifactId>
+        <version>1.1.0</version>
+    </parent>
+
     <properties>
         <!-- Encoding -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -17,6 +23,12 @@
 
         <!-- Java -->
         <java.version>1.8</java.version>
+
+        <!-- Sonar -->
+        <sonar-maven-plugin.version>3.4.0.905</sonar-maven-plugin.version>
+        <sonar.host.url>${CODE_ANALYSIS_HOST_URL}</sonar.host.url>
+        <sonar.login>${CODE_ANALYSIS_LOGIN}</sonar.login>
+        <sonar.password>${CODE_ANALYSIS_PASSWORD}</sonar.password>
 
     </properties>
 
@@ -43,6 +55,11 @@
             <artifactId>aws-java-sdk-s3</artifactId>
             <version>1.11.642</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.sonarsource.scanner.maven</groupId>
+            <artifactId>sonar-maven-plugin</artifactId>
+            <version>${sonar-maven-plugin.version}</version>
         </dependency>
 
     </dependencies>
