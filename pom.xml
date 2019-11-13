@@ -79,12 +79,8 @@
 
     <repositories>
         <repository>
-            <id>artifactory-releases</id>
-            <url>http://ch-jenkins-2k8.internal.ch:8081/artifactory/libs-release-local</url>
-        </repository>
-        <repository>
-            <id>artifactory-snapshots</id>
-            <url>http://ch-jenkins-2k8.internal.ch:8081/artifactory/libs-snapshot-local</url>
+            <id>virtual-release</id>
+            <url>http://repository.aws.chdev.org:8081/artifactory/virtual-release</url>
         </repository>
     </repositories>
 
