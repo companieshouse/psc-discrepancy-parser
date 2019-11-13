@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>uk.gov.companieshouse</groupId>
-    <artifactId>unversioned</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>psc-discrepancy-parser</artifactId>
+    <version>unversioned</version>
     <packaging>jar</packaging>
     <name>psc-discrepancy-parser</name>
 
