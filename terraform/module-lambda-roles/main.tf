@@ -66,7 +66,7 @@ data "aws_iam_policy_document" "psc_discrepancy_parser_execution" {
     resources = [
       "arn:aws:logs:::log-group:/aws/lambda/${var.project_name}",
       "arn:aws:logs:*:*:log-group:*:*:*",
-      "arn:aws:s3:::${var.psc_discrepancy_bucket}/psc-discrepancy-reports/source/*",
+      "arn:aws:s3:::${var.psc_discrepancy_bucket}/psc-discrepancy-reports/*",
     ]
   }
 }

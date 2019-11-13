@@ -3,7 +3,7 @@
 # ------------------------------------------------------------------------------
 resource "aws_lambda_function" "psc_discrepancy_parser" {
   s3_bucket     = "${var.release_bucket_name}"
-  s3_key        = "${var.project_name}/${var.project_name}-${var.release_version}.zip"
+  s3_key        = "${var.project_name}/${var.project_name}-${var.release_version}.jar"
   function_name = "${var.project_name}"
   role          = "${var.execution_role}"
   handler       = "${var.handler}"
@@ -12,12 +12,21 @@ resource "aws_lambda_function" "psc_discrepancy_parser" {
   runtime       = "${var.runtime}"
 }
 
-resource "aws_lambda_permission" "apigw" {
+resource "aws_lambda_permission" "allow_bucket" {
+  statement_id  = "AllowExecutionFromS3Bucket"
   action        = "lambda:InvokeFunction"
   function_name = "${aws_lambda_function.psc_discrepancy_parser.arn}"
   principal     = "s3.amazonaws.com"
+  source_arn    = "arn:aws:s3:::${var.psc_discrepancy_bucket}"
+}
 
-  # The /*/* portion grants access from any method on any resource
-  # within the API Gateway "REST API".
-  source_arn = "arn:aws:s3:::${var.psc_discrepancy_bucket}/psc-discrepancy-reports/source/*"
+resource "aws_s3_bucket_notification" "bucket_notification" {
+  bucket = "${var.psc_discrepancy_bucket}"
+
+  lambda_function {
+    lambda_function_arn = "${aws_lambda_function.psc_discrepancy_parser.arn}"
+    events              = ["s3:ObjectCreated:*"]
+    filter_prefix       = "psc-discrepancy-reports/source/"
+    filter_suffix       = ".csv"
+  }
 }
