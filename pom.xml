@@ -10,6 +10,13 @@
     <packaging>jar</packaging>
     <name>psc-discrepancy-parser</name>
 
+    <!-- parent pom must be at least 1.1.0 -->
+    <parent>
+        <groupId>uk.gov.companieshouse</groupId>
+        <artifactId>companies-house-parent</artifactId>
+        <version>1.1.0</version>
+    </parent>
+
     <properties>
         <!-- Encoding -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
