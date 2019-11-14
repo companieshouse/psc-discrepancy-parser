@@ -29,3 +29,6 @@ variable release_version {}
 variable release_bucket_name {
     default = "release.ch.gov.uk"
 }
+
+variable psc_email_recipient {}
+variable psc_discrepancy_bucket_prefix {}

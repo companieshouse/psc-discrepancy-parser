@@ -24,3 +24,10 @@ module "lambda-roles" {
     project_name             = "${var.project_name}"
     psc_discrepancy_bucket   = "${var.psc_discrepancy_bucket}"
 }
+
+module "ses" {
+    source                          = "module-ses"
+    psc_discrepancy_bucket          = "${var.psc_discrepancy_bucket}"
+    psc_discrepancy_bucket_prefix   = "${var.psc_discrepancy_bucket_prefix}"
+    psc_email_recipient             = "${var.psc_email_recipient}"
+}
