@@ -2,7 +2,7 @@
 # SES
 # ------------------------------------------------------------------------------
 resource "aws_ses_receipt_rule_set" "psc_discrepancy_report_email" {
-    rule_set_name   = "email-to-s3-rule"
+    rule_set_name   = "psc-email-to-s3"
 }
 
 resource "aws_ses_receipt_rule" "store" {
