@@ -1,8 +1,9 @@
 # ------------------------------------------------------------------------------
 # Environment
 # ------------------------------------------------------------------------------
-psc_discrepancy_bucket = "aws-glue-datalakepre"
+psc_discrepancy_bucket = "test-psc-discrepancy"
 workspace_key_prefix = "psc-discrepancy-parser"
 state_file_name = "psc-discrepancy-parser.tfstate"
 psc_email_recipient = "devaml@companieshouse.gov.uk"
-psc_discrepancy_bucket_prefix = "psc-discrepancy-reports/source/"
+psc_discrepancy_bucket_prefix = "source/"
+psc_discrepancy_kms_alias = "alias/psc-discrepancy"

@@ -32,3 +32,5 @@ variable release_bucket_name {
 
 variable psc_email_recipient {}
 variable psc_discrepancy_bucket_prefix {}
+
+variable psc_discrepancy_kms_alias {}

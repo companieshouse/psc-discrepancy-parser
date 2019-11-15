@@ -31,3 +31,10 @@ module "ses" {
     psc_discrepancy_bucket_prefix   = "${var.psc_discrepancy_bucket_prefix}"
     psc_email_recipient             = "${var.psc_email_recipient}"
 }
+
+module "s3" {
+    source                     = "module-s3"
+    psc_discrepancy_bucket     = "${var.psc_discrepancy_bucket}"
+    execution_role             = "${module.lambda-roles.execution_role}"
+    psc_discrepancy_kms_alias  = "${var.psc_discrepancy_kms_alias}"
+}
