@@ -26,7 +26,7 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
   lambda_function {
     lambda_function_arn = "${aws_lambda_function.psc_discrepancy_parser.arn}"
     events              = ["s3:ObjectCreated:*"]
-    filter_prefix       = "psc-discrepancy-reports/source/"
+    filter_prefix       = "source/"
     filter_suffix       = ".csv"
   }
 }
