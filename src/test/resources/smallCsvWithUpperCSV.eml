@@ -1,0 +1,31 @@
+MIME-Version: 1.0
+Date: Tue, 19 Nov 2019 13:50:44 +0000
+Message-ID: <CA+hjsmtB+-a8uGSoJ4h=tPoC+c9O6A3E9UTnO6jk1EWV4P60SA@mail.senderco.com>
+Subject: Small CSV
+From: Sender <sender@senderco.com>
+To: Receiver <receiver@receiverco.gov.uk>
+Content-Type: multipart/mixed; boundary="000000000000dd625b0597b359b5"
+
+--000000000000dd625b0597b359b5
+Content-Type: multipart/alternative; boundary="000000000000dd62570597b359b3"
+
+--000000000000dd62570597b359b3
+Content-Type: text/plain; charset="UTF-8"
+
+A small CSV file
+
+--000000000000dd62570597b359b3
+Content-Type: text/html; charset="UTF-8"
+
+<div dir="ltr">A small CSV file<br></div>
+
+--000000000000dd62570597b359b3--
+--000000000000dd625b0597b359b5
+Content-Type: text/csv; charset="UTF-8"; name="smallCsv.csv"
+Content-Disposition: attachment; filename="smallCsv.CSV"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_k35x0yff0
+Content-ID: <f_k35x0yff0>
+
+77u/Im9uZSIsInR3byIsInRocmVlIg0KImZvdXIiLCJmaXZlIiwic2l4Ig0K
+--000000000000dd625b0597b359b5--
