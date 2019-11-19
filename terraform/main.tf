@@ -21,10 +21,19 @@ module "lambda" {
     runtime                  = "${var.runtime}"
     timeout_seconds          = "${var.timeout_seconds}"
     psc_discrepancy_bucket   = "${var.psc_discrepancy_bucket}"
+    subnet_ids               = "${var.subnet_ids}"
+    security_group_ids       = "${module.security-group.lambda_into_vpc_id}"
     release_version          = "${var.release_version}"
     release_bucket_name      = "${var.release_bucket_name}"
     execution_role           = "${module.lambda-roles.execution_role}"
 }
+
+module "security-group" {
+  source                    = "module-security-group"
+  vpc_id                    = "${var.vpc_id}"
+  environment               = "${var.environment}"
+  project_name              = "${var.project_name}"
+} 
 
 module "lambda-roles" {
     source                   = "module-lambda-roles"

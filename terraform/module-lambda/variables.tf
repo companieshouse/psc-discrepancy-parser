@@ -7,3 +7,5 @@ variable timeout_seconds {}
 variable project_name {}
 variable release_version {}
 variable execution_role {}
+variable subnet_ids {}
+variable security_group_ids {}

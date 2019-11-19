@@ -34,3 +34,10 @@ variable psc_email_recipient {}
 variable psc_discrepancy_bucket_prefix {}
 
 variable psc_discrepancy_kms_alias {}
+
+variable vpc_id {}
+
+variable subnet_ids {}
+
+variable environment {}
+variable security_group_ids {}
