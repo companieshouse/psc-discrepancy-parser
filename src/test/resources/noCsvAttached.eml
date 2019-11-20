@@ -1,0 +1,22 @@
+MIME-Version: 1.0
+Date: Tue, 19 Nov 2019 15:09:33 +0000
+Message-ID: <CA+hjsmu+ezcTyHwr5cu=Pxq7cb-brbCUda0oMi+H9ruqevk3Zg@mail.senderco.com>
+Subject: noCsvAttached
+From: Sender <sender@senderco.com>
+To: Receiver <receiver@receiverco.gov.uk>
+Content-Type: multipart/mixed; boundary="000000000000bb461a0597b47303"
+
+--000000000000bb461a0597b47303
+Content-Type: text/plain; charset="UTF-8"
+
+No CSV file attached, but anotehr
+
+--000000000000bb461a0597b47303
+Content-Type: text/csv; charset="UTF-8"; name="file.csv"
+Content-Disposition: attachment; filename="file.doc"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_k35zug781
+Content-ID: <f_k35zug781>
+
+77u/Im9uZSIsInR3byIsInRocmVlIg0KImZvdXIiLCJmaXZlIiwic2l4Ig0K
+--000000000000bb461a0597b47303--
