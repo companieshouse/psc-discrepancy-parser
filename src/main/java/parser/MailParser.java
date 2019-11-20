@@ -18,10 +18,11 @@ import org.apache.commons.io.IOUtils;
 public class MailParser {
     private static final Session NO_SESSION = null;
     private final MimeMessage msg;
+    private static final String CASE_INSENSITIVE_CSV_REGEX = ".+\\.[cC][sS][vV]$";
 
     /**
-     * Constructor that takes an InputStream from which the mail will be read and
-     * parses the email as a MIME message.
+     * Constructor that takes an InputStream from which the mail will be read and parses the email
+     * as a MIME message.
      * 
      * @param is The input stream.
      * @throws MessagingException if the email is corrupt in some way.
@@ -30,13 +31,15 @@ public class MailParser {
         msg = new MimeMessage(NO_SESSION, is);
     }
 
-
     /**
-     * If the email loaded in the constructor contains an attachment with a filename that ends in ".csv"
+     * If the email loaded in the constructor contains an attachment with a filename that ends in
+     * ".csv"
      * 
      * @return
-     * @throws MessagingException
-     * @throws IOException
+     * @throws MessagingException If there is a problem parsing the email.
+     * @throws IOException If there is a problem reading from the InputStream.
+     * @throws IllegalArgumentException If the attachment cannot be found, or if the email is not
+     *         multipart/mixed, or if the email has no Content-Type.
      */
     public byte[] extractCsvAttachment() throws MessagingException, IOException {
         boolean found = false;
@@ -55,8 +58,8 @@ public class MailParser {
             if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
                 String fileName = part.getFileName();
                 String encoding = part.getEncoding();
-                if (fileName != null && fileName.matches(".+\\.[cC][sS][vV]$") && encoding != null
-                                && "base64".equals(encoding)) {
+                if (fileName != null && fileName.matches(CASE_INSENSITIVE_CSV_REGEX)
+                                && encoding != null && "base64".equals(encoding)) {
                     InputStream partRawIs = part.getRawInputStream();
                     byte[] base64Encoded = IOUtils.toByteArray(partRawIs);
                     String base64 = new String(base64Encoded);

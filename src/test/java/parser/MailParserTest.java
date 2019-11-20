@@ -10,7 +10,6 @@ import java.io.InputStream;
 import javax.mail.MessagingException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import parser.MailParser;
 
 class MailParserTest {
     private static final String EXPECTED =
@@ -27,7 +26,7 @@ class MailParserTest {
         // The actual decoded bytes seem to start with 0xFF, not a legal UTF-8 character.
         // These are real emails being decoded (albeit anonymised) with real attachments.
         // I can only assume that the start bytes are something weird like magic file bytes.
-        // The resulting string does decode as CSV, so we have chosen not to worry.
+        // The resulting string does decode properly in a CSV parser, so we have chosen not to worry.
         // The same applies for every positive test, using contains rather than an exact match.
         assertTrue(extractedCsvAsString.contains(EXPECTED));
     }
@@ -65,7 +64,7 @@ class MailParserTest {
     }
 
     @Test
-    void mailThatIsNotMultipartThrowsIllegalArgEx() throws MessagingException, IOException {
+    void mailThatIsNotMultipartMixedThrowsIllegalArgEx() throws MessagingException, IOException {
         InputStream msgIs = getFileInputStream("src/test/resources/notMultipart.eml");
         MailParser mailParser = new MailParser(msgIs);
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
@@ -80,5 +79,4 @@ class MailParserTest {
         FileInputStream fin = new FileInputStream(fl);
         return new BufferedInputStream(fin);
     }
-
 }
