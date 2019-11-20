@@ -1,0 +1,239 @@
+#!/bin/bash
+
+BOLD=$(tput bold)
+NORMAL=$(tput sgr0)
+
+DARK_GREY='\033[1;30m'
+NO_COLOUR='\033[0m'
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+
+banner() {
+    eval $(echo printf -- '"$1%0.s"' {1..$(tput cols)})
+    printf "\n"
+}
+
+check_proceed() {
+    banner "-"
+    printf "AWS Profile: ${BOLD}$AWS_PROFILE${NORMAL}\n"
+    printf "Environment: ${BOLD}$environment${NORMAL}\n"
+    printf "Region: ${BOLD}$aws_region${NORMAL}\n"
+    printf "Bucket: ${BOLD}$aws_bucket${NORMAL}\n"
+    printf "Workspace key prefix: ${BOLD}$WORKSPACE_KEY_PREFIX${NORMAL}\n"
+    printf "Workspace: ${BOLD}$WORKSPACE${NORMAL}\n"
+    printf "State file: ${BOLD}$STATEFILE_NAME${NORMAL}\n"
+    printf "State file path: ${BOLD}$aws_bucket/$WORKSPACE_KEY_PREFIX/$WORKSPACE/$STATEFILE_NAME${NORMAL}\n"
+    banner "-"
+
+    read -p "Do you wish to proceed? (yes/no) " answer
+    printf "\n"
+    if [[ "$answer" != "yes" ]]; then
+        echo "User elected not to proceed"
+        exit 0
+    fi
+}
+
+check_return() {
+    local error_message=$1
+
+    if [[ $? -ne 0 ]]; then
+        print_error "$error_message"
+        exit $?
+    fi
+}
+
+check_terraform() {
+    which terraform
+    check_return "terraform not found in path"
+}
+
+check_version() {
+    local required_version="v0.12.7"
+    local version=$(terraform --version | head -n 1 | cut -d ' ' -f2)
+    if [[ $version != $required_version ]]; then
+        print_error "Incorrect version of Terraform: $version ($required_version required)"
+        exit 1
+    fi
+}
+
+contains_element() {
+    local element="$1"
+    local array=("${@:2}")
+
+    for i in "${array[@]}"; do
+        [[ "$i" == "$element" ]] && return 0
+    done
+    return 1
+}
+
+initialise_terraform() {
+    local current_workspace=$(terraform workspace show)
+
+    # Check if the correct workspace is already selected
+    if [[ "$current_workspace" == "$WORKSPACE" ]]; then
+        printf "Workspace: [${BOLD}$current_workspace${NORMAL}]\n"
+        return 0
+    fi
+
+    # If an Incorrect workspace is selected we need to re-initialise
+    printf "Incorrect workspace selected [${BOLD}$current_workspace${NORMAL}], clearing state...\n"
+    rm -rf ./.terraform
+
+    echo "Loading modules..."
+    terraform get
+
+    terraform init \
+        -backend-config="bucket=$aws_bucket" \
+        -backend-config="key=$STATEFILE_NAME" \
+        -backend-config="region=$aws_region" \
+        -backend-config="workspace_key_prefix=$WORKSPACE_KEY_PREFIX"
+
+    # We may have pulled in a workspace after initialisation. Try selecting it...
+    if terraform workspace select $WORKSPACE >/dev/null 2>&1; then
+        printf "Selected workspace [${BOLD}$WORKSPACE${NORMAL}]\n"
+        return 0
+    fi
+
+    # The workspace doesn't exist, try creating it...
+    if terraform workspace new $WORKSPACE; then
+        printf "Created workspace [${BOLD}$WORKSPACE${NORMAL}]\n"
+        return 0
+    else
+        print_error "An error occurred while creating workspace [$WORKSPACE]"
+        return 1
+    fi
+}
+
+load_profile_configuration() {
+    source "$SCRIPT_DIRECTORY/environments/$AWS_PROFILE/$environment/terraform.cfg"
+    vars_file="$SCRIPT_DIRECTORY/environments/$AWS_PROFILE/$environment/vars"
+}
+
+pushd() {
+    printf "${DARK_GREY}Moving to directory [$1]${NO_COLOUR}\n"
+    command pushd "$1" >/dev/null
+}
+
+popd() {
+    printf "${DARK_GREY}Exiting directory [$(pwd)]${NO_COLOUR}\n"
+    command popd >/dev/null
+}
+
+print_error() {
+    printf "${RED}Error: ${NO_COLOUR}$1\n"
+}
+
+print_warning() {
+    printf "${YELLOW}Warning: ${NO_COLOUR}$1\n"
+}
+
+validate_action() {
+    local action="$1"
+    local actions=(apply destroy plan refresh state)
+    for i in "${actions[@]}"; do
+        if [[ $i == "$action" ]]; then
+            return 0
+        fi
+    done
+    print_error "Invalid action: $action"
+    exit 1
+}
+
+validate_environment() {
+    local environments_directory="$SCRIPT_DIRECTORY/environments"
+
+    if [[ ! -d "$environments_directory" ]]; then
+        print_error "No environment directory detected"
+        exit 1
+    fi
+
+    if [[ ! -d "$environments_directory/$AWS_PROFILE/$1" ]]; then
+        print_error "Invalid environment: $1"
+        exit 1
+    fi
+
+    verify_property "$environments_directory/$AWS_PROFILE/$1/vars" "environment" "$1"
+
+}
+
+validate_profile() {
+    local environments_directory="$SCRIPT_DIRECTORY/environments"
+
+    if [[ ! -d "$environments_directory/$AWS_PROFILE" ]]; then
+        print_error "No configuration found for AWS profile: [${BOLD}$AWS_PROFILE${NORMAL}]"
+        exit 1
+    fi
+
+    local required_credentials=(
+        region
+        aws_access_key_id
+        aws_secret_access_key
+    )
+    local missing_credentials=false
+
+    for env_var in ${required_credentials[@]}; do
+        value=$(aws configure get $env_var)
+        if [[ -z $value ]]; then
+            print_error "${env_var} credential missing from your AWS_PROFILE. You must re-configure your AWS_profile to proceed"
+            missing_credentials=true
+        fi
+    done
+
+    if [[ $missing_credentials == true ]]; then
+        exit 1
+    fi
+}
+
+var_file_action() {
+    local action="$1"
+    local allows_varfile=(apply plan push refresh destroy)
+    contains_element "$action" "${allows_varfile[@]}"
+    return $?
+}
+
+verify_no_credentials_set() {
+    local unwanted_vars=(
+        AWS_ACCESS_KEY_ID
+        AWS_SECRET_ACCESS_KEY
+        AWS_REGION
+    )
+    local variable_set=false
+
+    for env_var in ${unwanted_vars[@]}; do
+        if [[ -n $(printenv $env_var) ]]; then
+            print_error "${env_var} detected, these should be defined via your profile. Please remove using (${BOLD}unset ${env_var} ${NORMAL})"
+            variable_set=true
+        fi
+    done
+
+    if [[ $variable_set == true ]]; then
+        exit 1
+    fi
+}
+
+verify_property() {
+    local properties_file="$1"
+    local property_name="$2"
+    local expected_value="$3"
+
+    if [[ ! -f "$properties_file" ]]; then
+        print_error "Properties file missing: [${BOLD}$properties_file${NORMAL}]"
+        exit 1
+    fi
+
+    local value=$(cat $properties_file | grep -e "^$property_name\s" | tr -d ' ' | cut -d'=' -f2 | tr -d '"')
+    if [[ "$expected_value" != "$value" ]]; then
+        print_error "Environment configuration mismatch: parameter:[${BOLD}$value${NORMAL}] configuration file:[${BOLD}$expected_value${NORMAL}]"
+        exit 1
+    fi
+}
+
+warn_proxy() {
+    if [[ -n "${HTTP_PROXY:-}" ]] ||
+        [[ -n "${HTTPS_PROXY:-}" ]] ||
+        [[ -n "${http_proxy:-}" ]] ||
+        [[ -n "${https_proxy:-}" ]]; then
+        printf "\n"
+        print_warning "Proxy settings detected. This may affect connectivity${NO_COLOUR}\n"
+    fi
+}
