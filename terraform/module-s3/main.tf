@@ -1,6 +1,24 @@
 resource "aws_kms_key" "psc_discrepancy_encryption_key" {
     description             = "Encrypt user uploaded psc discrepancy report data."
     deletion_window_in_days = 30
+    policy                  = <<POLICY
+{
+    "Version": "2012-10-17",
+    "Id": "key-default-1",
+    "Statement": [
+        {
+            "Sid": "Enable IAM User Permissions",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "ses.amazonaws.com",
+                "AWS": "arn:aws:iam::169942020521:root"
+            },
+            "Action": "kms:*",
+            "Resource": "*"
+        }
+    ]
+}
+POLICY
 }
 
 resource "aws_kms_alias" "psc_discrepancy_encryption_key_alias" {
@@ -57,4 +75,8 @@ resource "aws_kms_grant" "psc_discrepancy_encryption_key_grant" {
     key_id              = "${aws_kms_key.psc_discrepancy_encryption_key.key_id}"
     grantee_principal   = "${var.execution_role}"
     operations          = ["Encrypt", "Decrypt", "GenerateDataKey"]
+}
+
+output "s3_bucket_kms_arn" {
+    value = "${aws_kms_alias.psc_discrepancy_encryption_key_alias.arn}"
 }

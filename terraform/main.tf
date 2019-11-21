@@ -27,7 +27,6 @@ module "s3" {
 
 module "security-group" {
   source                    = "./module-security-group"
-#   vpc_id                    = "${var.vpc_id}"
   vpc_id                    = "${lookup(var.vpc_id, var.aws_region)}"
   environment               = "${var.environment}"
   project_name              = "${var.project_name}"
@@ -41,7 +40,6 @@ module "lambda" {
     runtime                  = "${var.runtime}"
     timeout_seconds          = "${var.timeout_seconds}"
     psc_discrepancy_bucket   = "${var.psc_discrepancy_bucket}"
-    # subnet_ids               = "${var.subnet_ids}"
     security_group_ids       = "${module.security-group.lambda_into_vpc_id}"
     release_version          = "${var.release_version}"
     release_bucket_name      = "${var.release_bucket_name}"
@@ -60,4 +58,6 @@ module "ses" {
     psc_discrepancy_bucket          = "${var.psc_discrepancy_bucket}"
     psc_discrepancy_bucket_prefix   = "${var.psc_discrepancy_bucket_prefix}"
     psc_email_recipient             = "${var.psc_email_recipient}"
+    s3_bucket_kms_arn               = "${module.s3.s3_bucket_kms_arn}"
+    rule_set_name                   = "${var.rule_set_name}"
 }

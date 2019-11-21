@@ -48,3 +48,5 @@ variable psc_discrepancy_bucket_prefix {}
 variable psc_discrepancy_kms_alias {}
 
 variable environment {}
+
+variable rule_set_name {}
