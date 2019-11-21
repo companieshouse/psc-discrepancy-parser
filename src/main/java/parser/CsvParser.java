@@ -10,15 +10,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
-import model.PscDiscrepancySurveyObligedEntity;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import model.PscDiscrepancySurvey;
-import model.PscDiscrepancySurveyQuestion;
+import model.PscDiscrepancySurveyObligedEntity;
 import model.PscDiscrepancySurveyQandA;
+import model.PscDiscrepancySurveyQuestion;
 
 public class CsvParser {
     private static final int INITIAL_LINES_TO_IGNORE = 3;
@@ -29,8 +28,9 @@ public class CsvParser {
     private final List<CSVRecord> failedToBeParsedLines = new ArrayList<>();
     private final Reader reader;
     private static final Logger logger = LogManager.getLogger(CsvParser.class);
-    private PscDiscrepancyFoundListener listener;
+    private final PscDiscrepancyFoundListener listener;
     private boolean successfullyProcessedSoFar = true;
+    private int currentRecordBeingParsed = -1;
 
     public interface PscDiscrepancyFoundListener {
         boolean parsed(PscDiscrepancySurvey discrepancy);
@@ -41,27 +41,34 @@ public class CsvParser {
         this.listener = listener;
     }
 
-    public CsvParser(byte[] bytesToParse,
-                    PscDiscrepancyFoundListener listener) {
+    public CsvParser(byte[] bytesToParse, PscDiscrepancyFoundListener listener) {
         this.listener = listener;
         ByteArrayInputStream decodedBase64AsStream = new ByteArrayInputStream(bytesToParse);
-        this.reader = new InputStreamReader(decodedBase64AsStream);
+        reader = new InputStreamReader(decodedBase64AsStream);
     }
 
     public boolean parseRecords() throws IOException {
+        Iterator<CSVRecord> it = null;
         try {
             Iterable<CSVRecord> records =
                             CSVFormat.DEFAULT.withNullString(NULL_FIELD).parse(reader);
-            Iterator<CSVRecord> it = records.iterator();
+            it = records.iterator();
             if (moveToStartOfData(it, INITIAL_LINES_TO_IGNORE)) {
                 while (it.hasNext()) {
+                    currentRecordBeingParsed++;
                     parseRecord(it.next());
                 }
             } else {
                 successfullyProcessedSoFar = false;
             }
         } catch (RuntimeException ex) {
-            logger.error("Unexpected runtime exception caught while parsing: " + ex, ex);
+            logger.error("Unexpected runtime exception caught while parsing record[: {}" + ex, ex);
+            if (it != null) {
+                while (it.hasNext()) {
+                    failedToBeParsedLines.add(it.next());
+                    // TODO: record counter
+                }
+            }
             successfullyProcessedSoFar = false;
         }
         return successfullyProcessedSoFar;
@@ -108,7 +115,7 @@ public class CsvParser {
         discrepancy.setCompanyNumber(record.get(14));
 
         discrepancy.setDiscrepancyType(record.get(15));
-        
+
         String discrepancyIdentifiedOnStr = record.get(2);
         if (discrepancyIdentifiedOnStr != null) {
             SimpleDateFormat format = new SimpleDateFormat(DATE_FORMAT);
@@ -133,9 +140,9 @@ public class CsvParser {
             if (a != null) {
                 PscDiscrepancySurveyQuestion q = PscDiscrepancySurveyQuestion.getByZeroIndexId(i);
                 if (q == PscDiscrepancySurveyQuestion.UNKNOWN) {
-                    logger.error("Given column number, could not find question: %s", i);
-                     foundUnknownQuestion = true;
-                     break;
+                    logger.error("Given column number, could not find question: {}", i);
+                    foundUnknownQuestion = true;
+                    break;
                 } else {
                     PscDiscrepancySurveyQandA qa = new PscDiscrepancySurveyQandA();
                     qa.setQuestion(q);
