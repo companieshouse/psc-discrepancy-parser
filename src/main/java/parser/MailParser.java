@@ -1,7 +1,9 @@
 package parser;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Base64.Decoder;
 import javax.mail.MessagingException;
@@ -49,7 +51,7 @@ public class MailParser {
             throw new IllegalArgumentException("Could not find Content-Type");
         }
         if (!contentType.startsWith("multipart/mixed")) {
-            throw new IllegalArgumentException("Not multipart/mixed: " + contentType);
+            throw new IllegalArgumentException("Not multipart/mixed:\n" + getMsgAsString());
         }
         Multipart multiPart = (Multipart) msg.getContent();
         int numberOfParts = multiPart.getCount();
@@ -74,5 +76,10 @@ public class MailParser {
             throw new IllegalArgumentException("Could not find attachment of type CSV");
         }
         return result;
+    }
+    private String getMsgAsString() throws IOException, MessagingException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        msg.writeTo(out);
+        return new String(out.toByteArray(), StandardCharsets.UTF_8);
     }
 }
