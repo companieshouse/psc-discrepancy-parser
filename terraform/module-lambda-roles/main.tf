@@ -47,7 +47,10 @@ data "aws_iam_policy_document" "psc_discrepancy_parser_execution" {
       "s3:HeadBucket",
       "logs:PutDestination",
       "logs:DescribeResourcePolicies",
-      "logs:DescribeDestinations"
+      "logs:DescribeDestinations",
+      "ec2:CreateNetworkInterface",
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:DeleteNetworkInterface",
     ]
 
     resources = [
@@ -66,7 +69,7 @@ data "aws_iam_policy_document" "psc_discrepancy_parser_execution" {
     resources = [
       "arn:aws:logs:::log-group:/aws/lambda/${var.project_name}",
       "arn:aws:logs:*:*:log-group:*:*:*",
-      "arn:aws:s3:::${var.psc_discrepancy_bucket}/psc-discrepancy-reports/*",
+      "arn:aws:s3:::${var.psc_discrepancy_bucket}/*",
     ]
   }
 }

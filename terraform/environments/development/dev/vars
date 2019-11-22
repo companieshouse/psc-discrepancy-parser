@@ -1,8 +1,13 @@
+aws_bucket = "ch-development-terraform-state"
+aws_region = "eu-west-1"
+environment = "dev"
+deploy_to = "farm1"
+state_prefix = "mm"
+
 # ------------------------------------------------------------------------------
 # Environment
 # ------------------------------------------------------------------------------
-psc_discrepancy_bucket = "aws-glue-datalakepre"
-workspace_key_prefix = "psc-discrepancy-parser"
-state_file_name = "psc-discrepancy-parser.tfstate"
-psc_email_recipient = "devaml@companieshouse.gov.uk"
-psc_discrepancy_bucket_prefix = "psc-discrepancy-reports/source/"
+psc_discrepancy_bucket = "test-psc-discrepancy"
+psc_email_recipient = "devaml@devaml.companieshouse.gov.uk"
+psc_discrepancy_bucket_prefix = "source/"
+rule_set_name = "default-rule-set"

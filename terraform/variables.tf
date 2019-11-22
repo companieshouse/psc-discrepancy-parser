@@ -2,6 +2,18 @@ variable aws_region {
     default = "eu-west-1"
 }
 
+variable state_prefix {}
+variable deploy_to {}
+variable aws_bucket {}
+
+# These vpcs are configured for development. Preprod and prod are overridden in the vars file.
+variable "vpc_id" {
+  default = {
+    eu-west-1 = "vpc-83c425e7" #Ireland
+    eu-west-2 = "vpc-074ff55ed5182e144" #London
+  }
+}
+
 variable handler {
     default = "handler.Handler::handleRequest"
 }
@@ -32,3 +44,7 @@ variable release_bucket_name {
 
 variable psc_email_recipient {}
 variable psc_discrepancy_bucket_prefix {}
+
+variable environment {}
+
+variable rule_set_name {}
