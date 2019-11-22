@@ -9,4 +9,3 @@ variable release_version {}
 variable execution_role {}
 variable subnet_ids {}
 variable security_group_ids {}
-variable s3_bucket_kms_arn {}

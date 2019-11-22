@@ -51,7 +51,6 @@ data "aws_iam_policy_document" "psc_discrepancy_parser_execution" {
       "ec2:CreateNetworkInterface",
       "ec2:DescribeNetworkInterfaces",
       "ec2:DeleteNetworkInterface",
-      "kms:*"
     ]
 
     resources = [

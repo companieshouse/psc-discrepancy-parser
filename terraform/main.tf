@@ -22,7 +22,6 @@ module "s3" {
     source                     = "./module-s3"
     psc_discrepancy_bucket     = "${var.psc_discrepancy_bucket}"
     execution_role             = "${module.lambda-roles.execution_role}"
-    psc_discrepancy_kms_alias  = "${var.psc_discrepancy_kms_alias}"
 }
 
 module "security-group" {
@@ -38,7 +37,6 @@ module "lambda" {
     handler                  = "${var.handler}"
     memory_megabytes         = "${var.memory_megabytes}"
     runtime                  = "${var.runtime}"
-    s3_bucket_kms_arn        = "${module.s3.s3_bucket_kms_arn}"
     timeout_seconds          = "${var.timeout_seconds}"
     psc_discrepancy_bucket   = "${var.psc_discrepancy_bucket}"
     security_group_ids       = "${module.security-group.lambda_into_vpc_id}"
@@ -59,6 +57,5 @@ module "ses" {
     psc_discrepancy_bucket          = "${var.psc_discrepancy_bucket}"
     psc_discrepancy_bucket_prefix   = "${var.psc_discrepancy_bucket_prefix}"
     psc_email_recipient             = "${var.psc_email_recipient}"
-    s3_bucket_kms_arn               = "${module.s3.s3_bucket_kms_arn}"
     rule_set_name                   = "${var.rule_set_name}"
 }

@@ -10,7 +10,6 @@ resource "aws_lambda_function" "psc_discrepancy_parser" {
   memory_size   = "${var.memory_megabytes}"
   timeout       = "${var.timeout_seconds}"
   runtime       = "${var.runtime}"
-  kms_key_arn   = "${var.s3_bucket_kms_arn}"
 
   vpc_config {
     subnet_ids         = flatten([split(",", var.subnet_ids)])
