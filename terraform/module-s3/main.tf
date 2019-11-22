@@ -10,7 +10,10 @@ resource "aws_kms_key" "psc_discrepancy_encryption_key" {
             "Sid": "Enable IAM User Permissions",
             "Effect": "Allow",
             "Principal": {
-                "Service": "ses.amazonaws.com",
+                "Service": [
+                    "ses.amazonaws.com",
+                    "lambda.amazonaws.com"
+                ],
                 "AWS": "arn:aws:iam::169942020521:root"
             },
             "Action": "kms:*",

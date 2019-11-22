@@ -38,6 +38,7 @@ module "lambda" {
     handler                  = "${var.handler}"
     memory_megabytes         = "${var.memory_megabytes}"
     runtime                  = "${var.runtime}"
+    s3_bucket_kms_arn        = "${module.s3.s3_bucket_kms_arn}"
     timeout_seconds          = "${var.timeout_seconds}"
     psc_discrepancy_bucket   = "${var.psc_discrepancy_bucket}"
     security_group_ids       = "${module.security-group.lambda_into_vpc_id}"
