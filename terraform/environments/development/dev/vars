@@ -7,6 +7,7 @@ state_prefix = "mm"
 # ------------------------------------------------------------------------------
 # Environment
 # ------------------------------------------------------------------------------
+workspace_key_prefix = "psc-discrepancy-parser"
 psc_discrepancy_bucket = "test-psc-discrepancy"
 psc_email_recipient = "devaml@devaml.companieshouse.gov.uk"
 psc_discrepancy_bucket_prefix = "source/"
