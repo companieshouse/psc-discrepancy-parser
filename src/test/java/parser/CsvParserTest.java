@@ -23,12 +23,10 @@ class CsvParserTest {
         @Override
         public boolean parsed(PscDiscrepancySurvey discrepancy) {
             ObjectMapper objectMapper = new ObjectMapper();
-            String discrepancyJson;
             try {
-                discrepancyJson = objectMapper.writeValueAsString(discrepancy);
+                String discrepancyJson = objectMapper.writeValueAsString(discrepancy);
                 System.out.println(discrepancyJson);
-                System.out.println("---------------------------------");
-                System.out.println("---------------------------------");
+                
             } catch (JsonProcessingException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();

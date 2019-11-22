@@ -37,7 +37,7 @@ public class MailParser {
      * If the email loaded in the constructor contains an attachment with a filename that ends in
      * ".csv"
      * 
-     * @return
+     * @return the extracted CSV attachment
      * @throws MessagingException If there is a problem parsing the email.
      * @throws IOException If there is a problem reading from the InputStream.
      * @throws IllegalArgumentException If the attachment cannot be found, or if the email is not
@@ -77,6 +77,7 @@ public class MailParser {
         }
         return result;
     }
+
     private String getMsgAsString() throws IOException, MessagingException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         msg.writeTo(out);
