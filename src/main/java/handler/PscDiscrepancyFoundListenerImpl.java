@@ -27,7 +27,7 @@ public class PscDiscrepancyFoundListenerImpl implements PscDiscrepancyFoundListe
 
             LOG.error("Callback for discrepancy: {}", discrepancyJson);
 
-            HttpPost httpPost = new HttpPost("http://chpdev-pl6:21011/chips-restService/rest/chipsgeneric/pscDiscrepancies");
+            HttpPost httpPost = new HttpPost("http://chpdev-pl6.internal.ch:21011/chips-restService/rest/chipsgeneric/pscDiscrepancies");
             StringEntity entity = new StringEntity(discrepancyJson);
             httpPost.setEntity(entity);
             httpPost.setHeader("Content-type", "text/plain");
