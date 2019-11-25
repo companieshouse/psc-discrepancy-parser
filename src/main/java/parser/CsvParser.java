@@ -24,10 +24,10 @@ public class CsvParser {
     private static final String NULL_FIELD = "-";
     private static final int CORRECT_COLUMN_COUNT = 100;
     private static final String DATE_FORMAT = "dd/MM/yyyy";
+    private static final Logger LOG = LogManager.getLogger(CsvParser.class);
 //    private final List<CSVRecord> successfullyParsedLines = new ArrayList<>();
 //    private final List<CSVRecord> failedToBeParsedLines = new ArrayList<>();
     private final Reader reader;
-    private static final Logger logger = LogManager.getLogger(CsvParser.class);
     private final PscDiscrepancyFoundListener listener;
     private boolean successfullyProcessedSoFar = true;
     private int currentRecordBeingParsed = -1;
@@ -122,7 +122,7 @@ public class CsvParser {
                 Date discrepancyIdentifiedOn = format.parse(discrepancyIdentifiedOnStr);
                 discrepancy.setDiscrepancyIdentifiedOn(discrepancyIdentifiedOn);
             } catch (ParseException ex) {
-                logger.error("Could not parse discrepancyIdentifiedOnStr: {}",
+                LOG.error("Could not parse discrepancyIdentifiedOnStr: {}",
                                 discrepancyIdentifiedOnStr, ex);
                 return false;
             }
@@ -139,7 +139,7 @@ public class CsvParser {
             if (a != null) {
                 PscDiscrepancySurveyQuestion q = PscDiscrepancySurveyQuestion.getByZeroIndexId(i);
                 if (q == PscDiscrepancySurveyQuestion.UNKNOWN) {
-                    logger.error("Could not find question on zero-indexed record number: {}, zero-indexed column number: {}", currentRecordBeingParsed, i);
+                    LOG.error("Could not find question on zero-indexed record number: {}, zero-indexed column number: {}", currentRecordBeingParsed, i);
                     foundUnknownQuestion = true;
                     break;
                 } else {
@@ -173,7 +173,7 @@ public class CsvParser {
 
     boolean checkColumnCount(CSVRecord record) {
         if (CORRECT_COLUMN_COUNT != record.size()) {
-            logger.error("Unexpected number of columns in CSV record: {}", record.size());
+            LOG.error("Unexpected number of columns in CSV record: {}", record.size());
             return false;
         }
         return true;
@@ -182,13 +182,13 @@ public class CsvParser {
     boolean moveToStartOfData(Iterator<CSVRecord> it, int linesToIgnore) {
         boolean success = true;
         if (!it.hasNext()) {
-            logger.error("No records in file, not even headers");
+            LOG.error("No records in file, not even headers");
             success = false;
         } else {
             for (int i = 0; i < linesToIgnore; i++) {
                 if (!it.hasNext()) {
                     success = false;
-                    logger.error("Too few header lines in file, at zero-indexed line: %s", i);
+                    LOG.error("Too few header lines in file, at zero-indexed line: {}", i);
                     break;
                 } else {
                     it.next();
@@ -196,7 +196,7 @@ public class CsvParser {
             }
         }
         if (!it.hasNext()) {
-            logger.error("No records in file after headers");
+            LOG.error("No records in file after headers");
             success = false;
         }
         return success;

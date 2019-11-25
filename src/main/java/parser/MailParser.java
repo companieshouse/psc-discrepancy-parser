@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Base64.Decoder;
+import javax.mail.Address;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Part;
@@ -13,14 +14,17 @@ import javax.mail.Session;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Utility to extract a BASE64-encoded CSV attachment from a multipart/mixed email.
  */
 public class MailParser {
     private static final Session NO_SESSION = null;
-    private final MimeMessage msg;
     private static final String CASE_INSENSITIVE_CSV_REGEX = ".+\\.[cC][sS][vV]$";
+    private static final Logger LOG = LogManager.getLogger(MailParser.class);
+    private final MimeMessage msg;
 
     /**
      * Constructor that takes an InputStream from which the mail will be read and parses the email
@@ -48,11 +52,16 @@ public class MailParser {
         byte[] result = new byte[] {};
         String contentType = msg.getContentType();
         if (contentType == null) {
-            throw new IllegalArgumentException("Could not find Content-Type");
+            throw new MessagingException("Could not find Content-Type");
         }
         if (!contentType.startsWith("multipart/mixed")) {
-            throw new IllegalArgumentException("Not multipart/mixed:\n" + getMsgAsString());
+            throw new MessagingException("Not multipart/mixed:\n" + getMsgAsString());
         }
+        String messageID = msg.getMessageID();
+        Address[] from = msg.getFrom();
+        String[] date = msg.getHeader("Date");
+        String[] subject = msg.getHeader("Subject");
+        // TODO: log above.
         Multipart multiPart = (Multipart) msg.getContent();
         int numberOfParts = multiPart.getCount();
         for (int partCount = 0; partCount < numberOfParts; partCount++) {
@@ -73,7 +82,8 @@ public class MailParser {
             } // else skip this body part, not an attachment
         }
         if (!found) {
-            throw new IllegalArgumentException("Could not find attachment of type CSV");
+            LOG.error("Could not find attachment of type CSV");
+            throw new MessagingException("Could not find attachment of type CSV");
         }
         return result;
     }
