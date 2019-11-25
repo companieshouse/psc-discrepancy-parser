@@ -17,7 +17,6 @@ import parser.CsvParser;
 import parser.MailParser;
 import service.AmazonS3Service;
 
-
 public class Handler implements RequestHandler<S3Event, String> {
 
     private static final String SOURCE_FOLDER_PREFIX = "source/";
@@ -25,14 +24,15 @@ public class Handler implements RequestHandler<S3Event, String> {
     private static final String ACCEPTED_FOLDER_PREFIX = "accepted/";
     private static final Logger LOG = LogManager.getLogger(Handler.class);
 
-    private AmazonS3Service amazonS3Service = new AmazonS3Service();
+    private final AmazonS3Service amazonS3Service = new AmazonS3Service();
 
     public String handleRequest(S3Event s3event, Context context) {
+        LOG.info("handleRequest entry");
         for (S3EventNotificationRecord record : s3event.getRecords()) {
             String s3Key = amazonS3Service.getKey(record);
             String s3Bucket = amazonS3Service.getBucket(record);
-            LOG.error("found id: {} {}", s3Bucket, s3Key);
             S3Object s3Object = amazonS3Service.getFileFromS3(s3Bucket, s3Key);
+            LOG.info("handleRequest for S3 for s3Key: [{}], s3Bucket: [{}], s3Object: [{}]", s3Key, s3Bucket, s3Object);
             S3ObjectInputStream in = s3Object.getObjectContent();
 
             try {
@@ -46,7 +46,7 @@ public class Handler implements RequestHandler<S3Event, String> {
                 moveProcessedFile(s3Bucket, s3Key, in, isParsed);
                 LOG.error("Finishe processing CSV");
             } catch (MessagingException me) {
-                LOG.error("Email: " + s3Key + " is corrupt - moving to rejected folder", me);
+                LOG.error("Email: " + s3Key + " is corrupt or missing attachment - moving to rejected folder", me);
                 String changedS3key = s3Key.replace(SOURCE_FOLDER_PREFIX, REJECTED_FOLDER_PREFIX);
                 amazonS3Service.putFileInS3(s3Bucket, changedS3key, in, new ObjectMetadata());
             } catch (IOException e) {
@@ -55,11 +55,9 @@ public class Handler implements RequestHandler<S3Event, String> {
                 String changedS3key = s3Key.replace(SOURCE_FOLDER_PREFIX, REJECTED_FOLDER_PREFIX);
                 amazonS3Service.putFileInS3(s3Bucket, changedS3key , in, new ObjectMetadata());
             }
-
         }
-
+        LOG.info("handleRequest exit");
         return "ok";
-
     }
 
     private void moveProcessedFile(String s3Bucket, String s3Key, S3ObjectInputStream in,
@@ -73,3 +71,4 @@ public class Handler implements RequestHandler<S3Event, String> {
         }
     }
 }
+
