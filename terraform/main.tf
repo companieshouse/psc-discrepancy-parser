@@ -32,18 +32,19 @@ module "security-group" {
 } 
 
 module "lambda" {
-    source                   = "./module-lambda"
-    project_name             = "${var.project_name}"
-    handler                  = "${var.handler}"
-    memory_megabytes         = "${var.memory_megabytes}"
-    runtime                  = "${var.runtime}"
-    timeout_seconds          = "${var.timeout_seconds}"
-    psc_discrepancy_bucket   = "${var.psc_discrepancy_bucket}"
-    security_group_ids       = "${module.security-group.lambda_into_vpc_id}"
-    release_version          = "${var.release_version}"
-    release_bucket_name      = "${var.release_bucket_name}"
-    execution_role           = "${module.lambda-roles.execution_role}"
-    subnet_ids               = "${data.terraform_remote_state.networks.outputs.application_ids}"
+    source                          = "./module-lambda"
+    project_name                    = "${var.project_name}"
+    handler                         = "${var.handler}"
+    memory_megabytes                = "${var.memory_megabytes}"
+    runtime                         = "${var.runtime}"
+    timeout_seconds                 = "${var.timeout_seconds}"
+    psc_discrepancy_bucket          = "${var.psc_discrepancy_bucket}"
+    security_group_ids              = "${module.security-group.lambda_into_vpc_id}"
+    release_version                 = "${var.release_version}"
+    release_bucket_name             = "${var.release_bucket_name}"
+    chips_rest_interface_endpoint   = "${var.chips_rest_interface_endpoint}"
+    execution_role                  = "${module.lambda-roles.execution_role}"
+    subnet_ids                      = "${data.terraform_remote_state.networks.outputs.application_ids}"
 }
 
 module "lambda-roles" {
