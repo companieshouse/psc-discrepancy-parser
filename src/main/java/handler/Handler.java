@@ -2,6 +2,7 @@ package handler;
 
 import java.io.IOException;
 import javax.mail.MessagingException;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,12 +40,15 @@ public class Handler implements RequestHandler<S3Event, String> {
                 MailParser mailParser = new MailParser(in);
                 byte[] extractedCsv = mailParser.extractCsvAttachment();
                 LOG.error("Parsed email");
-                PscDiscrepancyFoundListenerImpl listener = new PscDiscrepancyFoundListenerImpl(HttpClients.createDefault(), "http://chpdev-pl6.internal.ch:21011/chips-restService/rest/chipsgeneric/pscDiscrepancies", new ObjectMapper());
-                PscDiscrepancySurveyCsvProcessor csvParser = new PscDiscrepancySurveyCsvProcessor(extractedCsv, listener);
-                LOG.error("About to parse CSV");
-                boolean isParsed = csvParser.parseRecords();
-                moveProcessedFile(s3Bucket, s3Key, in, isParsed);
-                LOG.error("Finishe processing CSV");
+                
+                try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+                    PscDiscrepancyFoundListenerImpl listener = new PscDiscrepancyFoundListenerImpl(httpClient, "http://chpdev-pl6.internal.ch:21011/chips-restService/rest/chipsgeneric/pscDiscrepancies", new ObjectMapper());
+                    PscDiscrepancySurveyCsvProcessor csvParser = new PscDiscrepancySurveyCsvProcessor(extractedCsv, listener);
+                    LOG.error("About to parse CSV");
+                    boolean isParsed = csvParser.parseRecords();
+                    moveProcessedFile(s3Bucket, s3Key, in, isParsed);
+                    LOG.error("Finished processing CSV");
+                }
             } catch (MessagingException me) {
                 LOG.error("Email: " + s3Key + " is corrupt or missing attachment - moving to rejected folder", me);
                 String changedS3key = s3Key.replace(SOURCE_FOLDER_PREFIX, REJECTED_FOLDER_PREFIX);
