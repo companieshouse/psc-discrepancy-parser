@@ -1,5 +1,7 @@
 package model;
 
+import java.util.Objects;
+
 public class PscDiscrepancySurveyObligedEntity {
     private String companyName;
     private String obligedEntityType;
@@ -12,7 +14,7 @@ public class PscDiscrepancySurveyObligedEntity {
     private String contactAddressLine4;
     private String contactAddressLine5;
     private String contactAddressLine6;
-    private String contactAddressPostCode;
+    private String contactAddressPostcode;
 
     public String getCompanyName() {
         return companyName;
@@ -103,11 +105,11 @@ public class PscDiscrepancySurveyObligedEntity {
     }
 
     public String getContactAddressPostCode() {
-        return contactAddressPostCode;
+        return contactAddressPostcode;
     }
 
-    public void setContactAddressPostCode(String contactAddressPostCode) {
-        this.contactAddressPostCode = contactAddressPostCode;
+    public void setContactAddressPostcode(String contactAddressPostCode) {
+        this.contactAddressPostcode = contactAddressPostCode;
     }
 
     private StringBuilder addCommaIfAlreadyAdded(boolean alreadyAdded, StringBuilder sb) {
@@ -175,11 +177,45 @@ public class PscDiscrepancySurveyObligedEntity {
             sb.append("contactAddressLine6=").append(contactAddressLine6);
             alreadyAdded = true;
         }
-        if (contactAddressPostCode != null) {
+        if (contactAddressPostcode != null) {
             addCommaIfAlreadyAdded(alreadyAdded, sb);
-            sb.append("contactAddressPostCode=").append(contactAddressPostCode);
+            sb.append("contactAddressPostcode=").append(contactAddressPostcode);
         }
         sb.append("]");
         return sb.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(companyName, contactAddressLine1, contactAddressLine2,
+                        contactAddressLine3, contactAddressLine4, contactAddressLine5,
+                        contactAddressLine6, contactAddressPostcode, contactEmail, contactName,
+                        contactPhone, obligedEntityType);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof PscDiscrepancySurveyObligedEntity)) {
+            return false;
+        }
+        PscDiscrepancySurveyObligedEntity other = (PscDiscrepancySurveyObligedEntity) obj;
+        return Objects.equals(companyName, other.companyName)
+                        && Objects.equals(contactAddressLine1, other.contactAddressLine1)
+                        && Objects.equals(contactAddressLine2, other.contactAddressLine2)
+                        && Objects.equals(contactAddressLine3, other.contactAddressLine3)
+                        && Objects.equals(contactAddressLine4, other.contactAddressLine4)
+                        && Objects.equals(contactAddressLine5, other.contactAddressLine5)
+                        && Objects.equals(contactAddressLine6, other.contactAddressLine6)
+                        && Objects.equals(contactAddressPostcode, other.contactAddressPostcode)
+                        && Objects.equals(contactEmail, other.contactEmail)
+                        && Objects.equals(contactName, other.contactName)
+                        && Objects.equals(contactPhone, other.contactPhone)
+                        && Objects.equals(obligedEntityType, other.obligedEntityType);
     }
 }
