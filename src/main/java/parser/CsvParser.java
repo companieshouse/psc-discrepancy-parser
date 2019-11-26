@@ -20,13 +20,31 @@ import model.PscDiscrepancySurveyQandA;
 import model.PscDiscrepancySurveyQuestion;
 
 public class CsvParser {
+    private static final int INDEX_OF_OBLIGED_ENTITY_COMPANY_NAME = 0;
+    private static final int INDEX_OF_OBLIGED_ENTITY_TYPE = 1;
+    private static final int INDEX_OF_OBLIGED_ENTITY_CONTACT_NAME = 3;
+    private static final int INDEX_OF_OBLIGED_ENTITY_CONTACT_EMAIL = 4;
+    private static final int INDEX_OF_OBLIGED_ENTITY_CONTACT_PHONE = 5;
+    private static final int INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_1 = 6;
+    private static final int INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_2 = 7;
+    private static final int INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_3 = 8;
+    private static final int INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_4 = 9;
+    private static final int INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_5 = 10;
+    private static final int INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_6 = 11;
+    private static final int INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_POSTCODE = 12;
+
+    private static final int INDEX_OF_DISCREPANCY_IDENTIFIED_ON = 2;
+    private static final int INDEX_OF_DISCREPANCY_COMPANY_NAME = 13;
+    private static final int INDEX_OF_DISCREPANCY_COMPANY_NUMBER = 14;
+
+    private static final int INDEX_OF_DISCREPANCY_TYPE = 15;
+
     private static final int INITIAL_LINES_TO_IGNORE = 3;
     private static final String NULL_FIELD = "-";
     private static final int CORRECT_COLUMN_COUNT = 100;
     private static final String DATE_FORMAT = "dd/MM/yyyy";
     private static final Logger LOG = LogManager.getLogger(CsvParser.class);
-//    private final List<CSVRecord> successfullyParsedLines = new ArrayList<>();
-//    private final List<CSVRecord> failedToBeParsedLines = new ArrayList<>();
+
     private final Reader reader;
     private final PscDiscrepancyFoundListener listener;
     private boolean successfullyProcessedSoFar = true;
@@ -49,9 +67,9 @@ public class CsvParser {
 
     public boolean parseRecords() throws IOException {
         Iterator<CSVRecord> it = null;
-            Iterable<CSVRecord> records =
-                            CSVFormat.DEFAULT.withNullString(NULL_FIELD).parse(reader);
-            it = records.iterator();
+        Iterable<CSVRecord> records = CSVFormat.DEFAULT.withNullString(NULL_FIELD).parse(reader);
+        it = records.iterator();
+        try {
             if (moveToStartOfData(it, INITIAL_LINES_TO_IGNORE)) {
                 while (it.hasNext()) {
                     currentRecordBeingParsed++;
@@ -60,16 +78,11 @@ public class CsvParser {
             } else {
                 successfullyProcessedSoFar = false;
             }
-//        } catch (RuntimeException ex) {
-//            logger.error("Unexpected runtime exception caught while parsing record at record number ([{}]: {}", currentRecordBeingParsed, ex, ex);
-//            if (it != null) {
-//                while (it.hasNext()) {
-//                    failedToBeParsedLines.add(it.next());
-//                    // TODO: record counter
-//                }
-//            }
-//            successfullyProcessedSoFar = false;
-//        }
+        } catch (IllegalStateException ex) {
+            LOG.error("Error parsing, could be corrupt CSV, at record number ([{}]: {}",
+                            currentRecordBeingParsed, ex, ex);
+            successfullyProcessedSoFar = false;
+        }
         return successfullyProcessedSoFar;
     }
 
@@ -81,41 +94,39 @@ public class CsvParser {
                         && parseQandAs(record, discrepancy);
         if (successfullyParsed) {
             boolean listenerCallbackSuccess = listener.parsed(discrepancy);
-            if (listenerCallbackSuccess) {
-                onRecordSuccessfullyProcessed(record);
-            } else {
-                onRecordFailedToBeProcessed(record);
+            if (!listenerCallbackSuccess) {
+                successfullyProcessedSoFar = false;
             }
         } else {
-            onRecordFailedToBeProcessed(record);
+            successfullyProcessedSoFar = false;
         }
     }
 
     boolean parseObligedEntity(CSVRecord record, PscDiscrepancySurvey discrepancy) {
         PscDiscrepancySurveyObligedEntity oe = new PscDiscrepancySurveyObligedEntity();
-        oe.setCompanyName(record.get(0));
-        oe.setObligedEntityType(record.get(1));
-        oe.setContactName(record.get(3));
-        oe.setContactEmail(record.get(4));
-        oe.setContactPhone(record.get(5));
-        oe.setContactAddressLine1(record.get(6));
-        oe.setContactAddressLine2(record.get(7));
-        oe.setContactAddressLine3(record.get(8));
-        oe.setContactAddressLine4(record.get(9));
-        oe.setContactAddressLine5(record.get(10));
-        oe.setContactAddressLine6(record.get(11));
-        oe.setContactAddressPostCode(record.get(12));
+        oe.setCompanyName(record.get(INDEX_OF_OBLIGED_ENTITY_COMPANY_NAME));
+        oe.setObligedEntityType(record.get(INDEX_OF_OBLIGED_ENTITY_TYPE));
+        oe.setContactName(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_NAME));
+        oe.setContactEmail(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_EMAIL));
+        oe.setContactPhone(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_PHONE));
+        oe.setContactAddressLine1(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_1));
+        oe.setContactAddressLine2(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_2));
+        oe.setContactAddressLine3(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_3));
+        oe.setContactAddressLine4(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_4));
+        oe.setContactAddressLine5(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_5));
+        oe.setContactAddressLine6(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_6));
+        oe.setContactAddressPostcode(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_POSTCODE));
         discrepancy.setObligedEntity(oe);
         return true;
     }
 
     boolean parseDiscrepancyBasicDetails(CSVRecord record, PscDiscrepancySurvey discrepancy) {
-        discrepancy.setCompanyName(record.get(13));
-        discrepancy.setCompanyNumber(record.get(14));
+        discrepancy.setCompanyName(record.get(INDEX_OF_DISCREPANCY_COMPANY_NAME));
+        discrepancy.setCompanyNumber(record.get(INDEX_OF_DISCREPANCY_COMPANY_NUMBER));
 
-        discrepancy.setDiscrepancyType(record.get(15));
+        discrepancy.setDiscrepancyType(record.get(INDEX_OF_DISCREPANCY_TYPE));
 
-        String discrepancyIdentifiedOnStr = record.get(2);
+        String discrepancyIdentifiedOnStr = record.get(INDEX_OF_DISCREPANCY_IDENTIFIED_ON);
         if (discrepancyIdentifiedOnStr != null) {
             SimpleDateFormat format = new SimpleDateFormat(DATE_FORMAT);
             try {
@@ -139,7 +150,8 @@ public class CsvParser {
             if (a != null) {
                 PscDiscrepancySurveyQuestion q = PscDiscrepancySurveyQuestion.getByZeroIndexId(i);
                 if (q == PscDiscrepancySurveyQuestion.UNKNOWN) {
-                    LOG.error("Could not find question on zero-indexed record number: {}, zero-indexed column number: {}", currentRecordBeingParsed, i);
+                    LOG.error("Could not find question on zero-indexed record number: {}, zero-indexed column number: {}",
+                                    currentRecordBeingParsed, i);
                     foundUnknownQuestion = true;
                     break;
                 } else {
@@ -156,19 +168,6 @@ public class CsvParser {
             discrepancy.setQuestionsAndAnswers(qas);
             return true;
         }
-    }
-
-    void onGeneralFailure() {
-        successfullyProcessedSoFar = false;
-    }
-
-    void onRecordSuccessfullyProcessed(CSVRecord record) {
-//        successfullyParsedLines.add(record);
-    }
-
-    void onRecordFailedToBeProcessed(CSVRecord record) {
-//        failedToBeParsedLines.add(record);
-        successfullyProcessedSoFar = false;
     }
 
     boolean checkColumnCount(CSVRecord record) {
@@ -194,10 +193,10 @@ public class CsvParser {
                     it.next();
                 }
             }
-        }
-        if (!it.hasNext()) {
-            LOG.error("No records in file after headers");
-            success = false;
+            if (!it.hasNext()) {
+                LOG.error("No records in file after headers");
+                success = false;
+            }
         }
         return success;
     }
