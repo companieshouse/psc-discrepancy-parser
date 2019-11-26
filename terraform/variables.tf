@@ -48,3 +48,5 @@ variable psc_discrepancy_bucket_prefix {}
 variable environment {}
 
 variable rule_set_name {}
+
+variable chips_rest_interface_endpoint {}

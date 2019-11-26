@@ -15,6 +15,12 @@ resource "aws_lambda_function" "psc_discrepancy_parser" {
     subnet_ids         = flatten([split(",", var.subnet_ids)])
     security_group_ids = list(var.security_group_ids)
   }
+
+  environment {
+    variables = {
+        CHIPS_REST_INTERFACE_ENDPOINT = "${var.chips_rest_interface_endpoint}"
+    }
+  }
 }
 
 resource "aws_lambda_permission" "allow_bucket" {
