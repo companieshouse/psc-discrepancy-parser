@@ -27,7 +27,6 @@ public class Handler implements RequestHandler<S3Event, String> {
     private PscDiscrepancyFoundListenerImpl listener;
 
     public String handleRequest(S3Event s3event, Context context) {
-
         for (S3EventNotificationRecord record : s3event.getRecords()) {
             String s3Key = amazonS3Service.getKey(record);
             String s3Bucket = amazonS3Service.getBucket(record);
@@ -64,7 +63,7 @@ public class Handler implements RequestHandler<S3Event, String> {
 
     private void moveProcessedFile(String s3Bucket, String s3Key, S3ObjectInputStream in,
             boolean isParsed) {
-        if(isParsed) {
+        if (isParsed) {
             String changedS3Key = s3Key.replace(SOURCE_FOLDER_PREFIX, ACCEPTED_FOLDER_PREFIX);
             amazonS3Service.putFileInS3(s3Bucket, changedS3Key, in, new ObjectMetadata());
         } else {
