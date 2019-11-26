@@ -55,19 +55,19 @@ class MailParserTest {
 
 
     @Test
-    void mailContainingNoCsvThrowsIllegalArgEx() throws MessagingException, IOException {
+    void mailContainingNoCsvThrowsMessagingEx() throws MessagingException, IOException {
         InputStream msgIs = getFileInputStream("src/test/resources/noCsvAttached.eml");
         MailParser mailParser = new MailParser(msgIs);
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+        Assertions.assertThrows(MessagingException.class, () -> {
             mailParser.extractCsvAttachment();
         });
     }
 
     @Test
-    void mailThatIsNotMultipartMixedThrowsIllegalArgEx() throws MessagingException, IOException {
+    void mailThatIsNotMultipartMixedThrowsMessagingEx() throws MessagingException, IOException {
         InputStream msgIs = getFileInputStream("src/test/resources/notMultipart.eml");
         MailParser mailParser = new MailParser(msgIs);
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+        Assertions.assertThrows(MessagingException.class, () -> {
             mailParser.extractCsvAttachment();
         });
     }
