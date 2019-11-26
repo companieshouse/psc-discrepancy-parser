@@ -2,6 +2,7 @@ package handler;
 
 import java.io.IOException;
 import javax.mail.MessagingException;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -11,6 +12,7 @@ import com.amazonaws.services.s3.event.S3EventNotification.S3EventNotificationRe
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import parser.CsvParser;
 import parser.MailParser;
 import service.AmazonS3Service;
@@ -28,6 +30,7 @@ public class Handler implements RequestHandler<S3Event, String> {
     private DiscrepancyService discrepancyService = new DiscrepancyService();
     private AmazonS3Service amazonS3Service = new AmazonS3Service();
     private PscDiscrepancyFoundListenerImpl listener;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     public String handleRequest(S3Event s3event, Context context) {
         for (S3EventNotificationRecord record : s3event.getRecords()) {
@@ -41,7 +44,7 @@ public class Handler implements RequestHandler<S3Event, String> {
                 MailParser mailParser = new MailParser(in);
                 byte[] extractedCsv = mailParser.extractCsvAttachment();
                 LOG.error("Parsed email");
-                listener = new PscDiscrepancyFoundListenerImpl();
+                listener = new PscDiscrepancyFoundListenerImpl(HttpClients.createDefault(), "http://chpdev-pl6.internal.ch:21011/chips-restService/rest/chipsgeneric/pscDiscrepancies", objectMapper);
                 CsvParser csvParser = new CsvParser(extractedCsv, listener);
                 LOG.error("About to parse CSV");
                 csvParser.parseRecords();
