@@ -13,7 +13,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import parser.CsvParser;
+import parser.PscDiscrepancySurveyCsvProcessor;
 import parser.MailParser;
 import service.AmazonS3Service;
 
@@ -40,7 +40,7 @@ public class Handler implements RequestHandler<S3Event, String> {
                 byte[] extractedCsv = mailParser.extractCsvAttachment();
                 LOG.error("Parsed email");
                 PscDiscrepancyFoundListenerImpl listener = new PscDiscrepancyFoundListenerImpl(HttpClients.createDefault(), "http://chpdev-pl6.internal.ch:21011/chips-restService/rest/chipsgeneric/pscDiscrepancies", new ObjectMapper());
-                CsvParser csvParser = new CsvParser(extractedCsv, listener);
+                PscDiscrepancySurveyCsvProcessor csvParser = new PscDiscrepancySurveyCsvProcessor(extractedCsv, new PscDiscrepancyFoundListenerImpl());
                 LOG.error("About to parse CSV");
                 boolean isParsed = csvParser.parseRecords();
                 moveProcessedFile(s3Bucket, s3Key, in, isParsed);

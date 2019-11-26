@@ -22,7 +22,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import model.PscDiscrepancySurvey;
-import parser.CsvParser.PscDiscrepancyFoundListener;
+import parser.PscDiscrepancySurveyCsvProcessor.PscDiscrepancyFoundListener;
 
 @ExtendWith(MockitoExtension.class)
 class CsvParserTest {
@@ -35,42 +35,42 @@ class CsvParserTest {
     @Test
     void emptyFileMustFailToParse() throws IOException {
         Reader fileReader = getFileReader("src/test/resources/empty.csv");
-        CsvParser parser = new CsvParser(fileReader, listener);
+        PscDiscrepancySurveyCsvProcessor parser = new PscDiscrepancySurveyCsvProcessor(fileReader, listener);
         assertFalse(parser.parseRecords());
     }
 
     @Test
     void csvFileWithTooFewHeadersMustFailToParse() throws IOException {
         Reader fileReader = getFileReader("src/test/resources/tooFewHeaders.csv");
-        CsvParser parser = new CsvParser(fileReader, listener);
+        PscDiscrepancySurveyCsvProcessor parser = new PscDiscrepancySurveyCsvProcessor(fileReader, listener);
         assertFalse(parser.parseRecords());
     }
 
     @Test
     void csvFileWithOnlyHeadersMustFailToParse() throws IOException {
         Reader fileReader = getFileReader("src/test/resources/onlyHeaders.csv");
-        CsvParser parser = new CsvParser(fileReader, listener);
+        PscDiscrepancySurveyCsvProcessor parser = new PscDiscrepancySurveyCsvProcessor(fileReader, listener);
         assertFalse(parser.parseRecords());
     }
 
     @Test
     void csvRecordWithTooFewColumnsMustFailToParse() throws IOException {
         Reader fileReader = getFileReader("src/test/resources/tooFewColumns.csv");
-        CsvParser parser = new CsvParser(fileReader, listener);
+        PscDiscrepancySurveyCsvProcessor parser = new PscDiscrepancySurveyCsvProcessor(fileReader, listener);
         assertFalse(parser.parseRecords());
     }
 
     @Test
     void csvRecordWithTooManyColumnsMustFailToParse() throws IOException {
         Reader fileReader = getFileReader("src/test/resources/tooManyColumns.csv");
-        CsvParser parser = new CsvParser(fileReader, listener);
+        PscDiscrepancySurveyCsvProcessor parser = new PscDiscrepancySurveyCsvProcessor(fileReader, listener);
         assertFalse(parser.parseRecords());
     }
 
     @Test
     void badDiscrepancyIdentifiedOnMustFailToParse() throws IOException {
         Reader fileReader = getFileReader("src/test/resources/badDate.csv");
-        CsvParser parser = new CsvParser(fileReader, listener);
+        PscDiscrepancySurveyCsvProcessor parser = new PscDiscrepancySurveyCsvProcessor(fileReader, listener);
         assertFalse(parser.parseRecords());
     }
 
@@ -79,7 +79,7 @@ class CsvParserTest {
         Reader fileReader = getFileReader("src/test/resources/oneGoodRecord.csv");
         PscDiscrepancySurvey expected = readSurvey("src/test/resources/oneGoodRecord.json");
         when(listener.parsed(expected)).thenReturn(true);
-        CsvParser parser = new CsvParser(fileReader, listener);
+        PscDiscrepancySurveyCsvProcessor parser = new PscDiscrepancySurveyCsvProcessor(fileReader, listener);
         assertTrue(parser.parseRecords());
     }
 
@@ -88,7 +88,7 @@ class CsvParserTest {
         Reader fileReader = getFileReader("src/test/resources/escapedCommas.csv");
         PscDiscrepancySurvey expected = readSurvey("src/test/resources/escapedCommas.json");
         when(listener.parsed(expected)).thenReturn(true);
-        CsvParser parser = new CsvParser(fileReader, listener);
+        PscDiscrepancySurveyCsvProcessor parser = new PscDiscrepancySurveyCsvProcessor(fileReader, listener);
         assertTrue(parser.parseRecords());
     }
 
@@ -97,7 +97,7 @@ class CsvParserTest {
         Reader fileReader = getFileReader("src/test/resources/escapedQuotes.csv");
         PscDiscrepancySurvey expected = readSurvey("src/test/resources/escapedQuotes.json");
         when(listener.parsed(expected)).thenReturn(true);
-        CsvParser parser = new CsvParser(fileReader, listener);
+        PscDiscrepancySurveyCsvProcessor parser = new PscDiscrepancySurveyCsvProcessor(fileReader, listener);
         assertTrue(parser.parseRecords());
     }
 
@@ -106,14 +106,14 @@ class CsvParserTest {
         Reader fileReader = getFileReader("src/test/resources/quotedNewlines.csv");
         PscDiscrepancySurvey expected = readSurvey("src/test/resources/quotedNewlines.json");
         when(listener.parsed(expected)).thenReturn(true);
-        CsvParser parser = new CsvParser(fileReader, listener);
+        PscDiscrepancySurveyCsvProcessor parser = new PscDiscrepancySurveyCsvProcessor(fileReader, listener);
         assertTrue(parser.parseRecords());
     }
 
     @Test
     void badCsvMustFailToParse() throws IOException {
         Reader fileReader = getFileReader("src/test/resources/badCsv.csv");
-        CsvParser parser = new CsvParser(fileReader, listener);
+        PscDiscrepancySurveyCsvProcessor parser = new PscDiscrepancySurveyCsvProcessor(fileReader, listener);
         assertFalse(parser.parseRecords());
     }
 
@@ -122,7 +122,7 @@ class CsvParserTest {
         Reader fileReader = getFileReader("src/test/resources/quotedNewlines.csv");
         PscDiscrepancySurvey expected = readSurvey("src/test/resources/quotedNewlines.json");
         when(listener.parsed(expected)).thenReturn(false);
-        CsvParser parser = new CsvParser(fileReader, listener);
+        PscDiscrepancySurveyCsvProcessor parser = new PscDiscrepancySurveyCsvProcessor(fileReader, listener);
         assertFalse(parser.parseRecords());
     }
 
