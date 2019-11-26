@@ -14,18 +14,15 @@ import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import parser.CsvParser;
 import parser.MailParser;
 import service.AmazonS3Service;
-import service.DiscrepancyService;
 
 
 public class Handler implements RequestHandler<S3Event, String> {
 
-    private static final String PROCESSED_FOLDER_PREFIX = "processed/";
     private static final String SOURCE_FOLDER_PREFIX = "source/";
     private static final String REJECTED_FOLDER_PREFIX = "rejected/";
     private static final String ACCEPTED_FOLDER_PREFIX = "accepted/";
     private static final Logger LOG = LogManager.getLogger(Handler.class);
 
-    private DiscrepancyService discrepancyService = new DiscrepancyService();
     private AmazonS3Service amazonS3Service = new AmazonS3Service();
     private PscDiscrepancyFoundListenerImpl listener;
 
@@ -44,7 +41,8 @@ public class Handler implements RequestHandler<S3Event, String> {
                 listener = new PscDiscrepancyFoundListenerImpl();
                 CsvParser csvParser = new CsvParser(extractedCsv, listener);
                 LOG.error("About to parse CSV");
-                csvParser.parseRecords();
+                boolean isParsed = csvParser.parseRecords();
+                moveProcessedFile(s3Bucket, s3Key, in, isParsed);
                 LOG.error("Finishe processing CSV");
             } catch (MessagingException me) {
                 LOG.error("Email: " + s3Key + " is corrupt - moving to rejected folder", me);
@@ -61,5 +59,16 @@ public class Handler implements RequestHandler<S3Event, String> {
 
         return "ok";
 
+    }
+
+    private void moveProcessedFile(String s3Bucket, String s3Key, S3ObjectInputStream in,
+            boolean isParsed) {
+        if (isParsed) {
+            String changedS3Key = s3Key.replace(SOURCE_FOLDER_PREFIX, ACCEPTED_FOLDER_PREFIX);
+            amazonS3Service.putFileInS3(s3Bucket, changedS3Key, in, new ObjectMetadata());
+        } else {
+            String changedS3Key = s3Key.replace(SOURCE_FOLDER_PREFIX, REJECTED_FOLDER_PREFIX);
+            amazonS3Service.putFileInS3(s3Bucket, changedS3Key, in, new ObjectMetadata());
+        }
     }
 }
