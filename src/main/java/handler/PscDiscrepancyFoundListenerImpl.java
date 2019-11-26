@@ -12,15 +12,15 @@ import org.apache.logging.log4j.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import model.PscDiscrepancySurvey;
-import parser.PscDiscrepancySurveyCsvProcessor.PscDiscrepancyFoundListener;
+import parser.PscDiscrepancySurveyCsvProcessor.PscDiscrepancyCreatedListener;
 
-public class PscDiscrepancyFoundListenerImpl implements PscDiscrepancyFoundListener {
+public class PscDiscrepancyFoundListenerImpl implements PscDiscrepancyCreatedListener {
 
     //private static String REST_URI = "http://localhost:8080/RESTfulExample/json/product/post";
     private static final Logger LOG = LogManager.getLogger(PscDiscrepancyFoundListenerImpl.class);
 
     @Override
-    public boolean parsed(PscDiscrepancySurvey discrepancy) {
+    public boolean created(PscDiscrepancySurvey discrepancy) {
         ObjectMapper objectMapper = new ObjectMapper();
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String discrepancyJson = objectMapper.writeValueAsString(discrepancy);

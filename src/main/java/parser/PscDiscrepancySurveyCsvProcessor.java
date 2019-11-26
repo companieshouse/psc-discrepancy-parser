@@ -22,7 +22,8 @@ import model.PscDiscrepancySurveyQuestion;
 /**
  * Parses the supplied CSV record(s) (assuming their format to be specific to a PSC Discrepancy
  * Survey), transforming the CSV to JSON, each of which is then supplied to
- * PscDiscrepancyFoundListener.
+ * PscDiscrepancyFoundListener. This class is not thread-safe and is designed to be used and
+ * discarded in the same thread. It is not supposed to be reused.
  */
 public class PscDiscrepancySurveyCsvProcessor {
     private static final int INDEX_OF_OBLIGED_ENTITY_COMPANY_NAME = 0;
@@ -44,28 +45,27 @@ public class PscDiscrepancySurveyCsvProcessor {
 
     private static final int INDEX_OF_DISCREPANCY_TYPE = 15;
 
-    private static final int INITIAL_LINES_TO_IGNORE = 3;
+    private static final int INITIAL_HEADER_RECORDS_TO_IGNORE = 3;
+    /** The string used in the CSV to represent a null-value field. */
     private static final String NULL_FIELD = "-";
-    private static final int CORRECT_COLUMN_COUNT = 100;
+    private static final int CORRECT_RECORD_COLUMN_COUNT = 100;
     private static final String DATE_FORMAT = "dd/MM/yyyy";
     private static final Logger LOG = LogManager.getLogger(PscDiscrepancySurveyCsvProcessor.class);
 
     private final Reader reader;
-    private final PscDiscrepancyFoundListener listener;
+    private final PscDiscrepancyCreatedListener listener;
     private boolean successfullyProcessedSoFar = true;
     private int currentRecordBeingParsed = -1;
 
-    public interface PscDiscrepancyFoundListener {
-        boolean parsed(PscDiscrepancySurvey discrepancy);
-    }
-
-    public PscDiscrepancySurveyCsvProcessor(Reader reader, PscDiscrepancyFoundListener listener) {
-        this.reader = reader;
-        this.listener = listener;
+    /**
+     * Callback listener invoked for each PscDiscrepancySurvey instance created from a CSV record.
+     */
+    public interface PscDiscrepancyCreatedListener {
+        boolean created(PscDiscrepancySurvey discrepancy);
     }
 
     public PscDiscrepancySurveyCsvProcessor(byte[] bytesToParse,
-                    PscDiscrepancyFoundListener listener) {
+                    PscDiscrepancyCreatedListener listener) {
         this.listener = listener;
         ByteArrayInputStream decodedBase64AsStream = new ByteArrayInputStream(bytesToParse);
         reader = new InputStreamReader(decodedBase64AsStream);
@@ -76,7 +76,7 @@ public class PscDiscrepancySurveyCsvProcessor {
         Iterable<CSVRecord> records = CSVFormat.DEFAULT.withNullString(NULL_FIELD).parse(reader);
         it = records.iterator();
         try {
-            if (moveToStartOfData(it, INITIAL_LINES_TO_IGNORE)) {
+            if (movePastHeadersToStartOfData(it, INITIAL_HEADER_RECORDS_TO_IGNORE)) {
                 while (it.hasNext()) {
                     currentRecordBeingParsed++;
                     parseRecord(it.next());
@@ -92,14 +92,37 @@ public class PscDiscrepancySurveyCsvProcessor {
         return successfullyProcessedSoFar;
     }
 
-    void parseRecord(CSVRecord record) {
+    private boolean movePastHeadersToStartOfData(Iterator<CSVRecord> it, int linesToIgnore) {
+        boolean success = true;
+        if (!it.hasNext()) {
+            LOG.error("No records in file, not even headers");
+            success = false;
+        } else {
+            for (int i = 0; i < linesToIgnore; i++) {
+                if (!it.hasNext()) {
+                    success = false;
+                    LOG.error("Too few header lines in file, at zero-indexed line: {}", i);
+                    break;
+                } else {
+                    it.next();
+                }
+            }
+            if (!it.hasNext()) {
+                LOG.error("No records in file after headers");
+                success = false;
+            }
+        }
+        return success;
+    }
+
+    private void parseRecord(CSVRecord record) {
         PscDiscrepancySurvey discrepancy = new PscDiscrepancySurvey();
         boolean successfullyParsed = checkColumnCount(record)
                         && parseDiscrepancyBasicDetails(record, discrepancy)
                         && parseObligedEntity(record, discrepancy)
                         && parseQandAs(record, discrepancy);
         if (successfullyParsed) {
-            boolean listenerCallbackSuccess = listener.parsed(discrepancy);
+            boolean listenerCallbackSuccess = listener.created(discrepancy);
             if (!listenerCallbackSuccess) {
                 successfullyProcessedSoFar = false;
             }
@@ -108,25 +131,8 @@ public class PscDiscrepancySurveyCsvProcessor {
         }
     }
 
-    boolean parseObligedEntity(CSVRecord record, PscDiscrepancySurvey discrepancy) {
-        PscDiscrepancySurveyObligedEntity oe = new PscDiscrepancySurveyObligedEntity();
-        oe.setCompanyName(record.get(INDEX_OF_OBLIGED_ENTITY_COMPANY_NAME));
-        oe.setObligedEntityType(record.get(INDEX_OF_OBLIGED_ENTITY_TYPE));
-        oe.setContactName(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_NAME));
-        oe.setContactEmail(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_EMAIL));
-        oe.setContactPhone(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_PHONE));
-        oe.setContactAddressLine1(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_1));
-        oe.setContactAddressLine2(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_2));
-        oe.setContactAddressLine3(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_3));
-        oe.setContactAddressLine4(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_4));
-        oe.setContactAddressLine5(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_5));
-        oe.setContactAddressLine6(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_6));
-        oe.setContactAddressPostcode(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_POSTCODE));
-        discrepancy.setObligedEntity(oe);
-        return true;
-    }
-
-    boolean parseDiscrepancyBasicDetails(CSVRecord record, PscDiscrepancySurvey discrepancy) {
+    private boolean parseDiscrepancyBasicDetails(CSVRecord record,
+                    PscDiscrepancySurvey discrepancy) {
         discrepancy.setCompanyName(record.get(INDEX_OF_DISCREPANCY_COMPANY_NAME));
         discrepancy.setCompanyNumber(record.get(INDEX_OF_DISCREPANCY_COMPANY_NUMBER));
 
@@ -147,7 +153,25 @@ public class PscDiscrepancySurveyCsvProcessor {
         return true;
     }
 
-    boolean parseQandAs(CSVRecord record, PscDiscrepancySurvey discrepancy) {
+    private boolean parseObligedEntity(CSVRecord record, PscDiscrepancySurvey discrepancy) {
+        PscDiscrepancySurveyObligedEntity oe = new PscDiscrepancySurveyObligedEntity();
+        oe.setCompanyName(record.get(INDEX_OF_OBLIGED_ENTITY_COMPANY_NAME));
+        oe.setObligedEntityType(record.get(INDEX_OF_OBLIGED_ENTITY_TYPE));
+        oe.setContactName(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_NAME));
+        oe.setContactEmail(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_EMAIL));
+        oe.setContactPhone(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_PHONE));
+        oe.setContactAddressLine1(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_1));
+        oe.setContactAddressLine2(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_2));
+        oe.setContactAddressLine3(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_3));
+        oe.setContactAddressLine4(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_4));
+        oe.setContactAddressLine5(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_5));
+        oe.setContactAddressLine6(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_6));
+        oe.setContactAddressPostcode(record.get(INDEX_OF_OBLIGED_ENTITY_CONTACT_ADDRESS_POSTCODE));
+        discrepancy.setObligedEntity(oe);
+        return true;
+    }
+
+    private boolean parseQandAs(CSVRecord record, PscDiscrepancySurvey discrepancy) {
         int size = record.size();
         List<PscDiscrepancySurveyQandA> qas = new ArrayList<>();
         boolean foundUnknownQuestion = false;
@@ -176,34 +200,11 @@ public class PscDiscrepancySurveyCsvProcessor {
         }
     }
 
-    boolean checkColumnCount(CSVRecord record) {
-        if (CORRECT_COLUMN_COUNT != record.size()) {
+    private boolean checkColumnCount(CSVRecord record) {
+        if (CORRECT_RECORD_COLUMN_COUNT != record.size()) {
             LOG.error("Unexpected number of columns in CSV record: {}", record.size());
             return false;
         }
         return true;
-    }
-
-    boolean moveToStartOfData(Iterator<CSVRecord> it, int linesToIgnore) {
-        boolean success = true;
-        if (!it.hasNext()) {
-            LOG.error("No records in file, not even headers");
-            success = false;
-        } else {
-            for (int i = 0; i < linesToIgnore; i++) {
-                if (!it.hasNext()) {
-                    success = false;
-                    LOG.error("Too few header lines in file, at zero-indexed line: {}", i);
-                    break;
-                } else {
-                    it.next();
-                }
-            }
-            if (!it.hasNext()) {
-                LOG.error("No records in file after headers");
-                success = false;
-            }
-        }
-        return success;
     }
 }
