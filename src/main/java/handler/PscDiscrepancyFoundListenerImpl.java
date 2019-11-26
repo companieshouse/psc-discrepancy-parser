@@ -12,7 +12,7 @@ import org.apache.logging.log4j.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import model.PscDiscrepancySurvey;
-import parser.CsvParser.PscDiscrepancyFoundListener;
+import parser.PscDiscrepancySurveyCsvProcessor.PscDiscrepancyFoundListener;
 
 public class PscDiscrepancyFoundListenerImpl implements PscDiscrepancyFoundListener {
 

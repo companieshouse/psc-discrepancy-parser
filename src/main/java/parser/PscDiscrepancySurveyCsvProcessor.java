@@ -19,7 +19,12 @@ import model.PscDiscrepancySurveyObligedEntity;
 import model.PscDiscrepancySurveyQandA;
 import model.PscDiscrepancySurveyQuestion;
 
-public class CsvParser {
+/**
+ * Parses the supplied CSV record(s) (assuming their format to be specific to a PSC Discrepancy
+ * Survey), transforming the CSV to JSON, each of which is then supplied to
+ * PscDiscrepancyFoundListener.
+ */
+public class PscDiscrepancySurveyCsvProcessor {
     private static final int INDEX_OF_OBLIGED_ENTITY_COMPANY_NAME = 0;
     private static final int INDEX_OF_OBLIGED_ENTITY_TYPE = 1;
     private static final int INDEX_OF_OBLIGED_ENTITY_CONTACT_NAME = 3;
@@ -43,7 +48,7 @@ public class CsvParser {
     private static final String NULL_FIELD = "-";
     private static final int CORRECT_COLUMN_COUNT = 100;
     private static final String DATE_FORMAT = "dd/MM/yyyy";
-    private static final Logger LOG = LogManager.getLogger(CsvParser.class);
+    private static final Logger LOG = LogManager.getLogger(PscDiscrepancySurveyCsvProcessor.class);
 
     private final Reader reader;
     private final PscDiscrepancyFoundListener listener;
@@ -54,12 +59,13 @@ public class CsvParser {
         boolean parsed(PscDiscrepancySurvey discrepancy);
     }
 
-    public CsvParser(Reader reader, PscDiscrepancyFoundListener listener) {
+    public PscDiscrepancySurveyCsvProcessor(Reader reader, PscDiscrepancyFoundListener listener) {
         this.reader = reader;
         this.listener = listener;
     }
 
-    public CsvParser(byte[] bytesToParse, PscDiscrepancyFoundListener listener) {
+    public PscDiscrepancySurveyCsvProcessor(byte[] bytesToParse,
+                    PscDiscrepancyFoundListener listener) {
         this.listener = listener;
         ByteArrayInputStream decodedBase64AsStream = new ByteArrayInputStream(bytesToParse);
         reader = new InputStreamReader(decodedBase64AsStream);
