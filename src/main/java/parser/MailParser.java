@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Base64.Decoder;
-import javax.mail.Address;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Part;
@@ -59,10 +58,9 @@ public class MailParser {
                 throw new MessagingException("Not multipart/mixed:\n" + getMsgAsString());
             }
             String messageID = msg.getMessageID();
-            Address[] from = msg.getFrom();
             String[] date = msg.getHeader("Date");
             String[] subject = msg.getHeader("Subject");
-            // TODO: log above.
+            LOG.info("Email details: [message-id: {}], [Subject: {}], [Date: {}]", messageID, subject, date);
             Multipart multiPart = (Multipart) msg.getContent();
             int numberOfParts = multiPart.getCount();
             for (int partCount = 0; partCount < numberOfParts; partCount++) {
