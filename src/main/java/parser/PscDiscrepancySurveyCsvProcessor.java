@@ -72,9 +72,8 @@ public class PscDiscrepancySurveyCsvProcessor {
     }
 
     public boolean parseRecords() throws IOException {
-        Iterator<CSVRecord> it = null;
         Iterable<CSVRecord> records = CSVFormat.DEFAULT.withNullString(NULL_FIELD).parse(reader);
-        it = records.iterator();
+        Iterator<CSVRecord> it = records.iterator();
         try {
             if (movePastHeadersToStartOfData(it, INITIAL_HEADER_RECORDS_TO_IGNORE)) {
                 while (it.hasNext()) {
