@@ -77,16 +77,6 @@ class PscDiscrepancySurveyCsvProcessorTest {
     }
 
     @Test
-    void oneGoodRecordMustParse() throws IOException {
-        byte[] bytes = getFile("src/test/resources/oneGoodRecord.csv");
-        PscDiscrepancySurvey expected = readSurvey("src/test/resources/oneGoodRecord.json");
-        when(listener.created(expected)).thenReturn(true);
-        PscDiscrepancySurveyCsvProcessor parser =
-                        new PscDiscrepancySurveyCsvProcessor(bytes, listener);
-        assertTrue(parser.parseRecords());
-    }
-
-    @Test
     void quotedCommasMustNotBlowUpParser() throws IOException {
         byte[] bytes = getFile("src/test/resources/escapedCommas.csv");
         PscDiscrepancySurvey expected = readSurvey("src/test/resources/escapedCommas.json");
