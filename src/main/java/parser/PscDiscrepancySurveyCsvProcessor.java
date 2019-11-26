@@ -88,6 +88,8 @@ public class PscDiscrepancySurveyCsvProcessor {
             LOG.error("Error parsing, could be corrupt CSV, at record number ([{}]: {}",
                             currentRecordBeingParsed, ex, ex);
             successfullyProcessedSoFar = false;
+        } finally {
+            reader.close();
         }
         return successfullyProcessedSoFar;
     }
