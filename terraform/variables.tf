@@ -48,3 +48,7 @@ variable psc_discrepancy_bucket_prefix {}
 variable environment {}
 
 variable rule_set_name {}
+
+variable workspace_key_prefix {}
+
+variable state_file_name {}
