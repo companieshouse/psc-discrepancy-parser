@@ -48,44 +48,48 @@ public class MailParser {
      *         multipart/mixed, or if the email has no Content-Type.
      */
     public byte[] extractCsvAttachment() throws MessagingException, IOException {
-        boolean found = false;
-        byte[] result = new byte[] {};
-        String contentType = msg.getContentType();
-        if (contentType == null) {
-            throw new MessagingException("Could not find Content-Type");
+        try {
+            boolean found = false;
+            byte[] result = new byte[] {};
+            String contentType = msg.getContentType();
+            if (contentType == null) {
+                throw new MessagingException("Could not find Content-Type");
+            }
+            if (!contentType.startsWith("multipart/mixed")) {
+                throw new MessagingException("Not multipart/mixed:\n" + getMsgAsString());
+            }
+            String messageID = msg.getMessageID();
+            Address[] from = msg.getFrom();
+            String[] date = msg.getHeader("Date");
+            String[] subject = msg.getHeader("Subject");
+            // TODO: log above.
+            Multipart multiPart = (Multipart) msg.getContent();
+            int numberOfParts = multiPart.getCount();
+            for (int partCount = 0; partCount < numberOfParts; partCount++) {
+                MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(partCount);
+                if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
+                    String fileName = part.getFileName();
+                    String encoding = part.getEncoding();
+                    if (fileName != null && fileName.matches(CASE_INSENSITIVE_CSV_REGEX)
+                                    && encoding != null && "base64".equals(encoding)) {
+                        InputStream partRawIs = part.getRawInputStream();
+                        byte[] base64Encoded = IOUtils.toByteArray(partRawIs);
+                        String base64 = new String(base64Encoded);
+                        Decoder mimeDecoder = Base64.getMimeDecoder();
+                        result = mimeDecoder.decode(base64);
+                        found = true;
+                        break;
+                    }
+                } // else skip this body part, not an attachment
+            }
+            if (!found) {
+                LOG.error("Could not find attachment of type CSV");
+                throw new MessagingException("Could not find attachment of type CSV");
+            }
+            return result;
+        } finally {
+            msg.getInputStream().close();
         }
-        if (!contentType.startsWith("multipart/mixed")) {
-            throw new MessagingException("Not multipart/mixed:\n" + getMsgAsString());
-        }
-        String messageID = msg.getMessageID();
-        Address[] from = msg.getFrom();
-        String[] date = msg.getHeader("Date");
-        String[] subject = msg.getHeader("Subject");
-        // TODO: log above.
-        Multipart multiPart = (Multipart) msg.getContent();
-        int numberOfParts = multiPart.getCount();
-        for (int partCount = 0; partCount < numberOfParts; partCount++) {
-            MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(partCount);
-            if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
-                String fileName = part.getFileName();
-                String encoding = part.getEncoding();
-                if (fileName != null && fileName.matches(CASE_INSENSITIVE_CSV_REGEX)
-                                && encoding != null && "base64".equals(encoding)) {
-                    InputStream partRawIs = part.getRawInputStream();
-                    byte[] base64Encoded = IOUtils.toByteArray(partRawIs);
-                    String base64 = new String(base64Encoded);
-                    Decoder mimeDecoder = Base64.getMimeDecoder();
-                    result = mimeDecoder.decode(base64);
-                    found = true;
-                    break;
-                }
-            } // else skip this body part, not an attachment
-        }
-        if (!found) {
-            LOG.error("Could not find attachment of type CSV");
-            throw new MessagingException("Could not find attachment of type CSV");
-        }
-        return result;
     }
 
     private String getMsgAsString() throws IOException, MessagingException {
