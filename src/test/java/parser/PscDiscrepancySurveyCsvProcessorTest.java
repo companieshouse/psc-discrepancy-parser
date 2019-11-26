@@ -21,12 +21,12 @@ import model.PscDiscrepancySurvey;
 import parser.PscDiscrepancySurveyCsvProcessor.PscDiscrepancyCreatedListener;
 
 @ExtendWith(MockitoExtension.class)
-class CsvParserTest {
+class PscDiscrepancySurveyCsvProcessorTest {
     @Mock
     private PscDiscrepancyCreatedListener listener;
 
     @Captor
-    ArgumentCaptor<PscDiscrepancySurvey> PscDiscrepancySurveyArg;
+    private ArgumentCaptor<PscDiscrepancySurvey> PscDiscrepancySurveyArg;
 
     @Test
     void emptyFileMustFailToParse() throws IOException {
