@@ -147,8 +147,10 @@ public class PscDiscrepancySurveyCsvProcessor {
                 Date discrepancyIdentifiedOn = format.parse(discrepancyIdentifiedOnStr);
                 discrepancy.setDiscrepancyIdentifiedOn(discrepancyIdentifiedOn);
             } catch (ParseException ex) {
+                // Choosing not to log the stack trace here, as the problem
+                // should be evident from discrepancyIdentifiedOnStr
                 LOG.error("Could not parse discrepancyIdentifiedOnStr: {}",
-                                discrepancyIdentifiedOnStr, ex);
+                                discrepancyIdentifiedOnStr);
                 return false;
             }
         }
