@@ -11,9 +11,9 @@ import org.apache.logging.log4j.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import model.PscDiscrepancySurvey;
-import parser.PscDiscrepancySurveyCsvProcessor.PscDiscrepancyFoundListener;
+import parser.PscDiscrepancySurveyCsvProcessor.PscDiscrepancyCreatedListener;
 
-public class PscDiscrepancyFoundListenerImpl implements PscDiscrepancyFoundListener {
+public class PscDiscrepancyFoundListenerImpl implements PscDiscrepancyCreatedListener {
 
     private static final Logger LOG = LogManager.getLogger(PscDiscrepancyFoundListenerImpl.class);
     private final CloseableHttpClient client;
@@ -28,7 +28,7 @@ public class PscDiscrepancyFoundListenerImpl implements PscDiscrepancyFoundListe
     }
 
     @Override
-    public boolean parsed(PscDiscrepancySurvey discrepancy) {
+    public boolean created(PscDiscrepancySurvey discrepancy) {
         try {
             String discrepancyJson = objectMapper.writeValueAsString(discrepancy);
             StringEntity entity = new StringEntity(discrepancyJson);
