@@ -40,7 +40,7 @@ public class Handler implements RequestHandler<S3Event, String> {
                 byte[] extractedCsv = mailParser.extractCsvAttachment();
                 LOG.error("Parsed email");
                 PscDiscrepancyFoundListenerImpl listener = new PscDiscrepancyFoundListenerImpl(HttpClients.createDefault(), "http://chpdev-pl6.internal.ch:21011/chips-restService/rest/chipsgeneric/pscDiscrepancies", new ObjectMapper());
-                PscDiscrepancySurveyCsvProcessor csvParser = new PscDiscrepancySurveyCsvProcessor(extractedCsv, new PscDiscrepancyFoundListenerImpl());
+                PscDiscrepancySurveyCsvProcessor csvParser = new PscDiscrepancySurveyCsvProcessor(extractedCsv, listener);
                 LOG.error("About to parse CSV");
                 boolean isParsed = csvParser.parseRecords();
                 moveProcessedFile(s3Bucket, s3Key, in, isParsed);
