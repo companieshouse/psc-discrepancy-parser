@@ -29,7 +29,7 @@ import com.amazonaws.util.IOUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import model.PscDiscrepancySurvey;
-import parser.CsvParser.PscDiscrepancyFoundListener;
+import parser.PscDiscrepancySurveyCsvProcessor.PscDiscrepancyCreatedListener;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -46,12 +46,12 @@ public class PscDiscrepancyFoundListenerImplTest {
     @Mock
     private CloseableHttpClient client;
     @Captor
-    private ArgumentCaptor argCaptor;
+    private ArgumentCaptor<HttpPost> argCaptor;
 
     private String REST_API = "http://test.ch:00000/chips";
     private PscDiscrepancySurvey discrepancy;
 
-    private PscDiscrepancyFoundListener pscDiscrepancyFoundListenerImpl;
+    private PscDiscrepancyCreatedListener pscDiscrepancyFoundListenerImpl;
 
     @BeforeEach
     public void setUp() {
@@ -67,7 +67,7 @@ public class PscDiscrepancyFoundListenerImplTest {
         when(response.getStatusLine()).thenReturn(statusLine);
         when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_ACCEPTED);
 
-        assertTrue(pscDiscrepancyFoundListenerImpl.parsed(discrepancy));
+        assertTrue(pscDiscrepancyFoundListenerImpl.created(discrepancy));
 
         verify(client).execute((HttpUriRequest) argCaptor.capture());
 
@@ -85,7 +85,7 @@ public class PscDiscrepancyFoundListenerImplTest {
         when(response.getStatusLine()).thenReturn(statusLine);
         when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_BAD_GATEWAY);
 
-        assertFalse(pscDiscrepancyFoundListenerImpl.parsed(discrepancy));
+        assertFalse(pscDiscrepancyFoundListenerImpl.created(discrepancy));
 
         verify(client).execute((HttpUriRequest) argCaptor.capture());
 
@@ -98,9 +98,10 @@ public class PscDiscrepancyFoundListenerImplTest {
     @Test
     public void testThrowsJsonProcessingException() throws ClientProtocolException, IOException {
         when(objectMapper.writeValueAsString(discrepancy))
-                        .thenThrow(new JsonProcessingException("") {});
+                        .thenThrow(new JsonProcessingException("") {
+                            private static final long serialVersionUID = 1L;});
 
-        assertFalse(pscDiscrepancyFoundListenerImpl.parsed(discrepancy));
+        assertFalse(pscDiscrepancyFoundListenerImpl.created(discrepancy));
     }
 
     @Test
@@ -108,6 +109,6 @@ public class PscDiscrepancyFoundListenerImplTest {
         when(objectMapper.writeValueAsString(discrepancy)).thenReturn("");
         when(client.execute(any(HttpPost.class))).thenThrow(new IOException());
 
-        assertFalse(pscDiscrepancyFoundListenerImpl.parsed(discrepancy));
+        assertFalse(pscDiscrepancyFoundListenerImpl.created(discrepancy));
     }
 }

@@ -2,6 +2,7 @@ package model;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The details filled in by an ObligedEntity about discrepancies with a Person of Significant
@@ -73,5 +74,31 @@ public class PscDiscrepancySurvey {
                         + ", companyName=" + companyName
                         + ", companyNumber=" + companyNumber
                         + ", questionsAndAnswers=" + questionsAndAnswers + "]";
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(companyName, companyNumber, discrepancyIdentifiedOn, discrepancyType,
+                        obligedEntity, questionsAndAnswers);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof PscDiscrepancySurvey)) {
+            return false;
+        }
+        PscDiscrepancySurvey other = (PscDiscrepancySurvey) obj;
+        return Objects.equals(companyName, other.companyName)
+                        && Objects.equals(companyNumber, other.companyNumber)
+                        && Objects.equals(discrepancyIdentifiedOn, other.discrepancyIdentifiedOn)
+                        && Objects.equals(discrepancyType, other.discrepancyType)
+                        && Objects.equals(obligedEntity, other.obligedEntity)
+                        && Objects.equals(questionsAndAnswers, other.questionsAndAnswers);
     }
 }
