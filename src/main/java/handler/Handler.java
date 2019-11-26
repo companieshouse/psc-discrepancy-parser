@@ -29,8 +29,6 @@ public class Handler implements RequestHandler<S3Event, String> {
 
     private DiscrepancyService discrepancyService = new DiscrepancyService();
     private AmazonS3Service amazonS3Service = new AmazonS3Service();
-    private PscDiscrepancyFoundListenerImpl listener;
-    private ObjectMapper objectMapper = new ObjectMapper();
 
     public String handleRequest(S3Event s3event, Context context) {
         for (S3EventNotificationRecord record : s3event.getRecords()) {
@@ -44,7 +42,7 @@ public class Handler implements RequestHandler<S3Event, String> {
                 MailParser mailParser = new MailParser(in);
                 byte[] extractedCsv = mailParser.extractCsvAttachment();
                 LOG.error("Parsed email");
-                listener = new PscDiscrepancyFoundListenerImpl(HttpClients.createDefault(), "http://chpdev-pl6.internal.ch:21011/chips-restService/rest/chipsgeneric/pscDiscrepancies", objectMapper);
+                PscDiscrepancyFoundListenerImpl listener = new PscDiscrepancyFoundListenerImpl(HttpClients.createDefault(), "http://chpdev-pl6.internal.ch:21011/chips-restService/rest/chipsgeneric/pscDiscrepancies", new ObjectMapper());
                 CsvParser csvParser = new CsvParser(extractedCsv, listener);
                 LOG.error("About to parse CSV");
                 csvParser.parseRecords();

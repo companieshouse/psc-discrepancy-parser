@@ -25,7 +25,6 @@ public class PscDiscrepancyFoundListenerImpl implements PscDiscrepancyFoundListe
         this.client = client;
         this.postUrl = postUrl;
         this.objectMapper = objectMapper;
-
     }
 
     @Override
@@ -33,13 +32,13 @@ public class PscDiscrepancyFoundListenerImpl implements PscDiscrepancyFoundListe
         try {
             String discrepancyJson = objectMapper.writeValueAsString(discrepancy);
             StringEntity entity = new StringEntity(discrepancyJson);
-            LOG.error("Callback for discrepancy: {}", discrepancyJson);
+            LOG.info("Callback for discrepancy: {}", discrepancyJson);
             HttpPost httpPost = new HttpPost(postUrl);
             httpPost.setEntity(entity);
             httpPost.setHeader("Content-type", "text/plain");
             try (CloseableHttpResponse response = client.execute(httpPost)) {
                 if (response.getStatusLine().getStatusCode() == HttpStatus.SC_ACCEPTED) {
-                    LOG.error("Successfully sent JSON");
+                    LOG.info("Successfully sent JSON");
                     return true;
                 } else {
                     LOG.error("Failed to send JSON: {}", response);
