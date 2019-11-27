@@ -47,8 +47,8 @@ public class PscDiscrepancyFoundListenerImplTest {
     private CloseableHttpClient client;
     @Captor
     private ArgumentCaptor<HttpPost> argCaptor;
-
-    private String REST_API = "http://test.ch:00000/chips";
+    private static final String CORRELATION_ID = "1234";
+    private static final String REST_API = "http://test.ch:00000/chips";
     private PscDiscrepancySurvey discrepancy;
 
     private PscDiscrepancyCreatedListener pscDiscrepancyFoundListenerImpl;
@@ -56,7 +56,7 @@ public class PscDiscrepancyFoundListenerImplTest {
     @BeforeEach
     public void setUp() {
         pscDiscrepancyFoundListenerImpl =
-                        new PscDiscrepancyFoundListenerImpl(client, REST_API, objectMapper);
+                        new PscDiscrepancyFoundListenerImpl(client, REST_API, objectMapper, CORRELATION_ID);
         discrepancy = new PscDiscrepancySurvey();
     }
 

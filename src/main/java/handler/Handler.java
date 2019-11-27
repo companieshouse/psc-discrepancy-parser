@@ -33,8 +33,9 @@ public class Handler implements RequestHandler<S3Event, String> {
 
     @Override
     public String handleRequest(S3Event s3event, Context context) {
-        LOG.info("handleRequest entry");
         String chipsEnvUri = environmentReader.getMandatoryString(CHIPS_REST_INTERFACE_ENDPOINT);
+        String requestId = context.getAwsRequestId();
+        LOG.info("handleRequest entry for awsRequestId: {}", requestId);
 
         for (S3EventNotificationRecord record : s3event.getRecords()) {
             String s3Key = amazonS3Service.getKey(record);
@@ -50,9 +51,8 @@ public class Handler implements RequestHandler<S3Event, String> {
                 LOG.error("Parsed email");
                 
                 try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-                    
                     PscDiscrepancyFoundListenerImpl listener = new PscDiscrepancyFoundListenerImpl(
-                                    httpClient, chipsEnvUri, new ObjectMapper());
+                                    httpClient, chipsEnvUri, new ObjectMapper(), requestId);
                     PscDiscrepancySurveyCsvProcessor csvParser =
                                     new PscDiscrepancySurveyCsvProcessor(extractedCsv, listener);
                     LOG.error("About to parse CSV");
