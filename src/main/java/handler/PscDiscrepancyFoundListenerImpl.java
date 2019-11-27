@@ -19,17 +19,20 @@ public class PscDiscrepancyFoundListenerImpl implements PscDiscrepancyCreatedLis
     private final CloseableHttpClient client;
     private final String postUrl;
     private final ObjectMapper objectMapper;
+    private final String requestId;
 
     public PscDiscrepancyFoundListenerImpl(CloseableHttpClient client, String postUrl,
-                    ObjectMapper objectMapper) {
+                    ObjectMapper objectMapper, String requestId) {
         this.client = client;
         this.postUrl = postUrl;
         this.objectMapper = objectMapper;
+        this.requestId = requestId;
     }
 
     @Override
     public boolean created(PscDiscrepancySurvey discrepancy) {
         try {
+            discrepancy.setRequestId(requestId);
             String discrepancyJson = objectMapper.writeValueAsString(discrepancy);
             StringEntity entity = new StringEntity(discrepancyJson);
             LOG.info("Callback for discrepancy: {}", discrepancyJson);
