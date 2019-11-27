@@ -9,3 +9,4 @@ variable release_version {}
 variable execution_role {}
 variable subnet_ids {}
 variable security_group_ids {}
+variable chips_rest_interface_endpoint {}

@@ -49,6 +49,8 @@ variable environment {}
 
 variable rule_set_name {}
 
+variable chips_rest_interface_endpoint {}
+  
 variable workspace_key_prefix {}
 
 variable state_file_name {}
