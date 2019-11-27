@@ -22,7 +22,7 @@ class MailParserTest {
         byte[] extractedCsvAttachment = mailParser.extractCsvAttachment();
         String extractedCsvAsString = new String(extractedCsvAttachment);
         // Note that an exact match could not be obtained, byte-for-byte,
-        // so the looser contains is used in these tests.
+        // so the looser 'contains' method is used in these tests, rather than equals.
         // The actual decoded bytes seem to start with 0xFF, not a legal UTF-8 character.
         // These are real emails being decoded (albeit anonymised) with real attachments.
         // I can only assume that the start bytes are something weird like magic file bytes.

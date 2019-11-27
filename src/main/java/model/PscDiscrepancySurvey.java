@@ -15,8 +15,17 @@ public class PscDiscrepancySurvey {
     private String companyName;
     private String companyNumber;
     private String discrepancyType;
+    private String requestId;
 
     private List<PscDiscrepancySurveyQandA> questionsAndAnswers;
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
+    }
 
     public PscDiscrepancySurveyObligedEntity getObligedEntity() {
         return obligedEntity;
@@ -68,7 +77,8 @@ public class PscDiscrepancySurvey {
 
     @Override
     public String toString() {
-        return "PscDiscrepancy [obligedEntity=" + obligedEntity
+        return "PscDiscrepancy [requestId=" + requestId
+                        + ", obligedEntity=" + obligedEntity
                         + ", discrepancyIdentifiedOn=" + discrepancyIdentifiedOn
                         + ", discrepancyType=" + discrepancyType
                         + ", companyName=" + companyName

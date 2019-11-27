@@ -29,7 +29,8 @@ public class Handler implements RequestHandler<S3Event, String> {
 
     @Override
     public String handleRequest(S3Event s3event, Context context) {
-        LOG.info("handleRequest entry");
+        String requestId = context.getAwsRequestId();
+        LOG.info("handleRequest entry for awsRequestId: {}", requestId);
         for (S3EventNotificationRecord record : s3event.getRecords()) {
             String s3Key = amazonS3Service.getKey(record);
             String s3Bucket = amazonS3Service.getBucket(record);
@@ -47,7 +48,8 @@ public class Handler implements RequestHandler<S3Event, String> {
                     PscDiscrepancyFoundListenerImpl listener = new PscDiscrepancyFoundListenerImpl(
                                     httpClient,
                                     "http://chpdev-pl6.internal.ch:21011/chips-restService/rest/chipsgeneric/pscDiscrepancies",
-                                    new ObjectMapper());
+                                    new ObjectMapper(),
+                                    requestId);
                     PscDiscrepancySurveyCsvProcessor csvParser =
                                     new PscDiscrepancySurveyCsvProcessor(extractedCsv, listener);
                     LOG.error("About to parse CSV");
