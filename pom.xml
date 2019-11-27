@@ -6,7 +6,7 @@
 
     <groupId>uk.gov.companieshouse</groupId>
     <artifactId>psc-discrepancy-parser</artifactId>
-    <version>unversioned</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
     <name>psc-discrepancy-parser</name>
 
@@ -111,7 +111,11 @@
             <scope>test</scope>
             <version>${mockito-junit-jupiter.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>uk.gov.companieshouse</groupId>
+            <artifactId>environment-reader-library</artifactId>
+            <version>1.3.6</version>
+        </dependency>
         <dependency>
             <groupId>org.sonarsource.scanner.maven</groupId>
             <artifactId>sonar-maven-plugin</artifactId>
