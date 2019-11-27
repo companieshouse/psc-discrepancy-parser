@@ -17,20 +17,26 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import parser.MailParser;
 import parser.PscDiscrepancySurveyCsvProcessor;
 import service.AmazonS3Service;
+import uk.gov.companieshouse.environment.EnvironmentReader;
+import uk.gov.companieshouse.environment.impl.EnvironmentReaderImpl;
 
 public class Handler implements RequestHandler<S3Event, String> {
 
     private static final String SOURCE_FOLDER_PREFIX = "source/";
     private static final String REJECTED_FOLDER_PREFIX = "rejected/";
     private static final String ACCEPTED_FOLDER_PREFIX = "accepted/";
+    private static final String CHIPS_REST_INTERFACE_ENDPOINT = "CHIPS_REST_INTERFACE_ENDPOINT";
     private static final Logger LOG = LogManager.getLogger(Handler.class);
 
     private final AmazonS3Service amazonS3Service = new AmazonS3Service();
+    private EnvironmentReader environmentReader = new EnvironmentReaderImpl();
 
     @Override
     public String handleRequest(S3Event s3event, Context context) {
+        String chipsEnvUri = environmentReader.getMandatoryString(CHIPS_REST_INTERFACE_ENDPOINT);
         String requestId = context.getAwsRequestId();
         LOG.info("handleRequest entry for awsRequestId: {}", requestId);
+
         for (S3EventNotificationRecord record : s3event.getRecords()) {
             String s3Key = amazonS3Service.getKey(record);
             String s3Bucket = amazonS3Service.getBucket(record);
@@ -43,13 +49,10 @@ public class Handler implements RequestHandler<S3Event, String> {
                 MailParser mailParser = new MailParser(in);
                 byte[] extractedCsv = mailParser.extractCsvAttachment();
                 LOG.error("Parsed email");
-
+                
                 try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
                     PscDiscrepancyFoundListenerImpl listener = new PscDiscrepancyFoundListenerImpl(
-                                    httpClient,
-                                    "http://chpdev-pl6.internal.ch:21011/chips-restService/rest/chipsgeneric/pscDiscrepancies",
-                                    new ObjectMapper(),
-                                    requestId);
+                                    httpClient, chipsEnvUri, new ObjectMapper(), requestId);
                     PscDiscrepancySurveyCsvProcessor csvParser =
                                     new PscDiscrepancySurveyCsvProcessor(extractedCsv, listener);
                     LOG.error("About to parse CSV");
