@@ -104,12 +104,12 @@ public class PscDiscrepancySurveyObligedEntity {
         this.contactAddressLine6 = contactAddressLine6;
     }
 
-    public String getContactAddressPostCode() {
+    public String getContactAddressPostcode() {
         return contactAddressPostcode;
     }
 
-    public void setContactAddressPostcode(String contactAddressPostCode) {
-        this.contactAddressPostcode = contactAddressPostCode;
+    public void setContactAddressPostcode(String contactAddressPostcode) {
+        this.contactAddressPostcode = contactAddressPostcode;
     }
 
     private StringBuilder addCommaIfAlreadyAdded(boolean alreadyAdded, StringBuilder sb) {

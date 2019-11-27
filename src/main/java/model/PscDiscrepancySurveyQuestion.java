@@ -79,7 +79,8 @@ public enum PscDiscrepancySurveyQuestion {
     DTPERSON_OEPROVIDED_PERSON_PLACE_OF_RESIDENCE(63, false),
     DTCOMPANY_REGISTERED_COMPANY_NAME(64, false),
     DTCOMPANY_REGISTERED_COMPANY_NUMBER(65, false),
-    DTCOMPANY_DISCREPANCY_SUBTYPE(66, false),
+    // TODO: remove OEPROVIDED from constant below
+    DTCOMPANY_OEPROVIDED_DISCREPANCY_SUBTYPE(66, false),
     DTPSCTYPE_DTPSCMISSING_DTCOMPANY_DTEXEMPTION_OEPROVIDED_EXEMPTION(67, false),
     DTCOMPANY_ROUTING_IS_DISCREPANCY_COMPANY_NAME(68, true),
     DTCOMPANY_OEPROVIDED_COMPANY_NAME(69, false),
@@ -113,22 +114,23 @@ public enum PscDiscrepancySurveyQuestion {
     DTPSCTYPE_DTPSCMISSING_DTSTATEMENT_OEPROVIDED_STATEMENT(97, false),
     DTOTHER_ROUTING_ANY_OTHER_DISCREPANCIES(98, true),
     DTOTHER_FREETEXT(99, false);
+
     private static final HashMap<Integer, PscDiscrepancySurveyQuestion> INDEXED_BY_CSV_COLUMN;
     static {
         HashMap<Integer, PscDiscrepancySurveyQuestion> tmpQMap = new HashMap<>();
         PscDiscrepancySurveyQuestion[] values = values();
         for (PscDiscrepancySurveyQuestion q : values) {
-            PscDiscrepancySurveyQuestion preexisting = tmpQMap.get(q.getZeroIndexedCsvColumn());
+            PscDiscrepancySurveyQuestion preexisting = tmpQMap.get(q.id);
             if (preexisting != null) {
                 throw new IllegalStateException(
                                 "Duplicate question column index in two questions: ");
             }
-            tmpQMap.put(q.getZeroIndexedCsvColumn(), q);
+            tmpQMap.put(q.id, q);
         }
         INDEXED_BY_CSV_COLUMN = tmpQMap;
     }
     /**
-     * Returns the PscDiscrepancyQuestion that whose return for {@link #getZeroIndexedCsvColumn()}
+     * Returns the PscDiscrepancyQuestion whose return for {@link #getZeroIndexedCsvColumn()}
      * matches id. If no match can be found, this returns {@link #UNKNOWN}.
      */
     public static PscDiscrepancySurveyQuestion getByZeroIndexId(int id) {
@@ -138,15 +140,15 @@ public enum PscDiscrepancySurveyQuestion {
         }
         return q;
     }
+
     private final int id;
     private final boolean isRouting;
+
     private PscDiscrepancySurveyQuestion(int id, boolean isRouting) {
         this.id = id;
         this.isRouting = isRouting;
     }
-    public int getZeroIndexedCsvColumn() {
-        return id;
-    }
+
     public boolean isRouting() {
         return isRouting;
     }
