@@ -14,4 +14,4 @@ psc_email_recipient = "stagingaml@stagingaml.companieshouse.gov.uk"
 psc_discrepancy_bucket_prefix = "source/"
 rule_set_name = "default-rule-set"
 chips_rest_interface_endpoint = "http://chpweb-envt14/chips-restService/rest/chipsgeneric/pscDiscrepancies"
-vpc_id = "vpc-078f17c92318f0ded"
+vpc_id = {eu-west-2 = "vpc-078f17c92318f0ded"}
