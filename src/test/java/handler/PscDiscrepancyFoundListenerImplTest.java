@@ -17,6 +17,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -62,7 +63,7 @@ public class PscDiscrepancyFoundListenerImplTest {
 
     @Test
     public void testJsonSentSuccessfully() throws ClientProtocolException, IOException {
-        when(objectMapper.writeValueAsString(discrepancy)).thenReturn("jsonSuccessful");
+        when(objectMapper.writeValueAsString(discrepancy)).thenReturn("\"jsonSuccessful\"");
         when(client.execute(any(HttpPost.class))).thenReturn(response);
         when(response.getStatusLine()).thenReturn(statusLine);
         when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_ACCEPTED);
@@ -74,13 +75,13 @@ public class PscDiscrepancyFoundListenerImplTest {
         HttpPost httpPost = (HttpPost) argCaptor.getValue();
         StringEntity stringEntity = (StringEntity) httpPost.getEntity();
         String result = IOUtils.toString(stringEntity.getContent());
-        assertEquals("jsonSuccessful", result);
+        assertEquals("\"jsonSuccessful\"", result);
 
     }
 
     @Test
     public void testJsonSentUnsuccessfully() throws ClientProtocolException, IOException {
-        when(objectMapper.writeValueAsString(discrepancy)).thenReturn("jsonUnsuccessful");
+        when(objectMapper.writeValueAsString(discrepancy)).thenReturn("\"jsonUnsuccessful\"");
         when(client.execute(any(HttpPost.class))).thenReturn(response);
         when(response.getStatusLine()).thenReturn(statusLine);
         when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_BAD_GATEWAY);
@@ -92,7 +93,7 @@ public class PscDiscrepancyFoundListenerImplTest {
         HttpPost httpPost = (HttpPost) argCaptor.getValue();
         StringEntity stringEntity = (StringEntity) httpPost.getEntity();
         String result = IOUtils.toString(stringEntity.getContent());
-        assertEquals("jsonUnsuccessful", result);
+        assertEquals("\"jsonUnsuccessful\"", result);
     }
 
     @Test
@@ -102,6 +103,24 @@ public class PscDiscrepancyFoundListenerImplTest {
                             private static final long serialVersionUID = 1L;});
 
         assertFalse(pscDiscrepancyFoundListenerImpl.created(discrepancy));
+    }
+
+    @Test
+    void whenBadJsonSuppliedThenItIsSanitisedBeforeSending()
+                    throws ClientProtocolException, IOException {
+        when(objectMapper.writeValueAsString(discrepancy)).thenReturn("unquotedString");
+        when(client.execute(any(HttpPost.class))).thenReturn(response);
+        when(response.getStatusLine()).thenReturn(statusLine);
+        when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_ACCEPTED);
+
+        assertTrue(pscDiscrepancyFoundListenerImpl.created(discrepancy));
+
+        verify(client).execute((HttpUriRequest) argCaptor.capture());
+
+        HttpPost httpPost = (HttpPost) argCaptor.getValue();
+        StringEntity stringEntity = (StringEntity) httpPost.getEntity();
+        String result = IOUtils.toString(stringEntity.getContent());
+        assertEquals("\"unquotedString\"", result);
     }
 
     @Test
