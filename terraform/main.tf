@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 provider "aws" {
-  alias = "ireland"
+  alias = "ses_region"
   region = "${var.aws_ses_region}"
 }
 
@@ -19,7 +19,7 @@ data "terraform_remote_state" "networks" {
   config = {
     bucket = "${var.aws_bucket}"
     key    = "${var.state_prefix}/${var.deploy_to}/${var.deploy_to}.tfstate"
-    region = "${var.aws_ses_region}"
+    region = "${var.aws_region}"
   }
 }
 
@@ -60,7 +60,7 @@ module "lambda-roles" {
 
 module "ses" {
     source                          = "./module-ses"
-    providers                       = {aws = "aws.ireland"}
+    providers                       = {aws = "aws.ses_region"}
     psc_discrepancy_bucket          = "${var.psc_discrepancy_bucket}"
     psc_discrepancy_bucket_prefix   = "${var.psc_discrepancy_bucket_prefix}"
     psc_email_recipient             = "${var.psc_email_recipient}"
