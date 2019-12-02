@@ -27,7 +27,9 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import parser.MailParser;
+import parser.MailParserFactory;
 import parser.PscDiscrepancySurveyCsvProcessor;
+import parser.PscDiscrepancySurveyCsvProcessorFactory;
 import service.AmazonS3Service;
 import uk.gov.companieshouse.environment.EnvironmentReader;
 
@@ -44,7 +46,7 @@ public class HandlerTest {
     private List<S3EventNotificationRecord> records = new ArrayList<>();
 
     @Captor
-    private ArgumentCaptor argCaptor;
+    private ArgumentCaptor<String> argCaptor;
 
     @Mock
     private S3Event s3Event;

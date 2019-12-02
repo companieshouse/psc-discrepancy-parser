@@ -1,8 +1,7 @@
-package handler;
+package parser;
 
 import java.io.InputStream;
 import javax.mail.MessagingException;
-import parser.MailParser;
 
 public class MailParserFactory {
     public MailParser createMailParser(InputStream in) throws MessagingException {
