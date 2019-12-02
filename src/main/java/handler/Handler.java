@@ -28,22 +28,23 @@ public class Handler implements RequestHandler<S3Event, String> {
     private static final String CHIPS_REST_INTERFACE_ENDPOINT = "CHIPS_REST_INTERFACE_ENDPOINT";
     private static final Logger LOG = LogManager.getLogger(Handler.class);
 
-    private AmazonS3Service amazonS3Service = new AmazonS3Service();
-    private EnvironmentReader environmentReader = new EnvironmentReaderImpl();
-    private MailParserFactory mailParserFactory;
-    private PscDiscrepancySurveyCsvProcessorFactory csvParserFactory;
-    private S3Object s3Object;
-    private S3ObjectInputStream in;
+    private final AmazonS3Service amazonS3Service;
+    private final EnvironmentReader environmentReader;
+    private final MailParserFactory mailParserFactory;
+    private final PscDiscrepancySurveyCsvProcessorFactory csvParserFactory;
 
-    private Handler(AmazonS3Service amazonS3Service, EnvironmentReader environmentReader,
-                    MailParserFactory mailParser, PscDiscrepancySurveyCsvProcessorFactory csvParser,
-                    S3Object s3Object, S3ObjectInputStream s3ObjectInputStream) {
+    protected Handler(AmazonS3Service amazonS3Service, EnvironmentReader environmentReader,
+                    MailParserFactory mailParser,
+                    PscDiscrepancySurveyCsvProcessorFactory csvParser) {
         this.amazonS3Service = amazonS3Service;
         this.environmentReader = environmentReader;
         this.mailParserFactory = mailParser;
         this.csvParserFactory = csvParser;
-        this.s3Object = s3Object;
-        this.in = s3ObjectInputStream;
+    }
+
+    public Handler() {
+        this(new AmazonS3Service(), new EnvironmentReaderImpl(), new MailParserFactory(),
+                        new PscDiscrepancySurveyCsvProcessorFactory());
     }
 
     @Override
@@ -55,10 +56,10 @@ public class Handler implements RequestHandler<S3Event, String> {
         for (S3EventNotificationRecord record : s3event.getRecords()) {
             String s3Key = amazonS3Service.getKey(record);
             String s3Bucket = amazonS3Service.getBucket(record);
-            s3Object = amazonS3Service.getFileFromS3(s3Bucket, s3Key);
+            S3Object s3Object = amazonS3Service.getFileFromS3(s3Bucket, s3Key);
             LOG.info("handleRequest for S3 for s3Key: [{}], s3Bucket: [{}], s3Object: [{}]", s3Key,
                             s3Bucket, s3Object);
-            in = s3Object.getObjectContent();
+            S3ObjectInputStream in = s3Object.getObjectContent();
 
             try {
                 MailParser mailParser = mailParserFactory.createMailParser(in);
@@ -103,4 +104,3 @@ public class Handler implements RequestHandler<S3Event, String> {
         }
     }
 }
-
