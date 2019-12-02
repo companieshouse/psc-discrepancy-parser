@@ -1,8 +1,9 @@
 # ------------------------------------------------------------------------------
 # Environment
 # ------------------------------------------------------------------------------
-aws_bucket = "ch-service-staging-terraform-state"
+aws_bucket = "staging-eu-west-2.terraform-state.ch.gov.uk"
 aws_region = "eu-west-2"
+aws_ses_region = "eu-west-1"
 environment = "staging"
 deploy_to = "staging"
 state_prefix = "env:/staging"
