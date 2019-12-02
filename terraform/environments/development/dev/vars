@@ -4,6 +4,7 @@ aws_ses_region = "eu-west-1"
 environment = "dev"
 deploy_to = "farm1"
 state_prefix = "mm"
+networks_state_bucket = "ch-development-terraform-state"
 
 # ------------------------------------------------------------------------------
 # Environment
