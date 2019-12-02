@@ -1,4 +1,8 @@
 variable aws_region {
+    default = "eu-west-2"
+}
+
+variable aws_ses_region {
     default = "eu-west-1"
 }
 
