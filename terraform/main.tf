@@ -17,7 +17,7 @@ data "terraform_remote_state" "networks" {
   backend = "s3"
 
   config = {
-    bucket = "${var.aws_bucket}"
+    bucket = "${var.networks_state_bucket}"
     key    = "${var.state_prefix}/${var.deploy_to}/${var.deploy_to}.tfstate"
     region = "${var.aws_region}"
   }
