@@ -15,7 +15,9 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import parser.MailParser;
+import parser.MailParserFactory;
 import parser.PscDiscrepancySurveyCsvProcessor;
+import parser.PscDiscrepancySurveyCsvProcessorFactory;
 import service.AmazonS3Service;
 import uk.gov.companieshouse.environment.EnvironmentReader;
 import uk.gov.companieshouse.environment.impl.EnvironmentReaderImpl;
@@ -28,8 +30,24 @@ public class Handler implements RequestHandler<S3Event, String> {
     private static final String CHIPS_REST_INTERFACE_ENDPOINT = "CHIPS_REST_INTERFACE_ENDPOINT";
     private static final Logger LOG = LogManager.getLogger(Handler.class);
 
-    private final AmazonS3Service amazonS3Service = new AmazonS3Service();
-    private EnvironmentReader environmentReader = new EnvironmentReaderImpl();
+    private final AmazonS3Service amazonS3Service;
+    private final EnvironmentReader environmentReader;
+    private final MailParserFactory mailParserFactory;
+    private final PscDiscrepancySurveyCsvProcessorFactory csvParserFactory;
+
+    protected Handler(AmazonS3Service amazonS3Service, EnvironmentReader environmentReader,
+                    MailParserFactory mailParser,
+                    PscDiscrepancySurveyCsvProcessorFactory csvParser) {
+        this.amazonS3Service = amazonS3Service;
+        this.environmentReader = environmentReader;
+        this.mailParserFactory = mailParser;
+        this.csvParserFactory = csvParser;
+    }
+
+    public Handler() {
+        this(new AmazonS3Service(), new EnvironmentReaderImpl(), new MailParserFactory(),
+                        new PscDiscrepancySurveyCsvProcessorFactory());
+    }
 
     @Override
     public String handleRequest(S3Event s3event, Context context) {
@@ -46,15 +64,15 @@ public class Handler implements RequestHandler<S3Event, String> {
             S3ObjectInputStream in = s3Object.getObjectContent();
 
             try {
-                MailParser mailParser = new MailParser(in);
+                MailParser mailParser = mailParserFactory.createMailParser(in);
                 byte[] extractedCsv = mailParser.extractCsvAttachment();
                 LOG.error("Parsed email");
-                
+
                 try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
                     PscDiscrepancyFoundListenerImpl listener = new PscDiscrepancyFoundListenerImpl(
                                     httpClient, chipsEnvUri, new ObjectMapper(), requestId);
-                    PscDiscrepancySurveyCsvProcessor csvParser =
-                                    new PscDiscrepancySurveyCsvProcessor(extractedCsv, listener);
+                    PscDiscrepancySurveyCsvProcessor csvParser = csvParserFactory
+                                    .createPscDiscrepancySurveyCsvProcessor(extractedCsv, listener);
                     LOG.error("About to parse CSV");
                     boolean isParsed = csvParser.parseRecords();
                     moveProcessedFile(s3Bucket, s3Key, in, isParsed);
@@ -88,4 +106,3 @@ public class Handler implements RequestHandler<S3Event, String> {
         }
     }
 }
-
