@@ -28,7 +28,7 @@ public class MailParser {
     /**
      * Constructor that takes an InputStream from which the mail will be read and parses the email
      * as a MIME message.
-     * 
+     *
      * @param is The input stream.
      * @throws MessagingException if the email is corrupt in some way.
      */
@@ -39,7 +39,7 @@ public class MailParser {
     /**
      * If the email loaded in the constructor contains an attachment with a filename that ends in
      * ".csv"
-     * 
+     *
      * @return the extracted CSV attachment
      * @throws MessagingException If there is a problem parsing the email.
      * @throws IOException If there is a problem reading from the InputStream.
@@ -60,7 +60,8 @@ public class MailParser {
             String messageID = msg.getMessageID();
             String[] date = msg.getHeader("Date");
             String[] subject = msg.getHeader("Subject");
-            LOG.info("Email details: [message-id: {}], [Subject: {}], [Date: {}]", messageID, subject, date);
+            LOG.info("Email details: [message-id: {}], [Subject: {}], [Date: {}]", messageID,
+                            subject, date);
             Multipart multiPart = (Multipart) msg.getContent();
             int numberOfParts = multiPart.getCount();
             for (int partCount = 0; partCount < numberOfParts; partCount++) {

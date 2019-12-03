@@ -36,12 +36,12 @@ public class Handler implements RequestHandler<S3Event, String> {
     private final PscDiscrepancySurveyCsvProcessorFactory csvParserFactory;
 
     protected Handler(AmazonS3Service amazonS3Service, EnvironmentReader environmentReader,
-                    MailParserFactory mailParser,
-                    PscDiscrepancySurveyCsvProcessorFactory csvParser) {
+                    MailParserFactory mailParserFactory,
+                    PscDiscrepancySurveyCsvProcessorFactory csvParserFactory) {
         this.amazonS3Service = amazonS3Service;
         this.environmentReader = environmentReader;
-        this.mailParserFactory = mailParser;
-        this.csvParserFactory = csvParser;
+        this.mailParserFactory = mailParserFactory;
+        this.csvParserFactory = csvParserFactory;
     }
 
     public Handler() {

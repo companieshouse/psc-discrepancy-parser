@@ -7,7 +7,7 @@ import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import provider.AmazonS3Provider;
 
 public class AmazonS3Service {
-    private AmazonS3Provider amazonS3Provider = new AmazonS3Provider();
+    private final AmazonS3Provider amazonS3Provider = new AmazonS3Provider();
 
     public String getKey(S3EventNotificationRecord record) {
         return record.getS3().getObject().getKey();
@@ -21,7 +21,8 @@ public class AmazonS3Service {
         return amazonS3Provider.provide().getObject(s3Bucket, s3Key);
     }
 
-    public void putFileInS3(String s3Bucket, String s3Key, S3ObjectInputStream input, ObjectMetadata omd) {
+    public void putFileInS3(String s3Bucket, String s3Key, S3ObjectInputStream input,
+                    ObjectMetadata omd) {
         amazonS3Provider.provide().putObject(s3Bucket, s3Key, input, omd);
     }
 
