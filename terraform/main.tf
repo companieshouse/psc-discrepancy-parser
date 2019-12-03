@@ -2,6 +2,11 @@ provider "aws" {
   region = "${var.aws_region}"
 }
 
+provider "aws" {
+  alias = "ses_region"
+  region = "${var.aws_ses_region}"
+}
+
 terraform {
     backend "s3" {}
 }
@@ -12,7 +17,7 @@ data "terraform_remote_state" "networks" {
   backend = "s3"
 
   config = {
-    bucket = "${var.aws_bucket}"
+    bucket = "${var.networks_state_bucket}"
     key    = "${var.state_prefix}/${var.deploy_to}/${var.deploy_to}.tfstate"
     region = "${var.aws_region}"
   }
@@ -55,6 +60,7 @@ module "lambda-roles" {
 
 module "ses" {
     source                          = "./module-ses"
+    providers                       = {aws = "aws.ses_region"}
     psc_discrepancy_bucket          = "${var.psc_discrepancy_bucket}"
     psc_discrepancy_bucket_prefix   = "${var.psc_discrepancy_bucket_prefix}"
     psc_email_recipient             = "${var.psc_email_recipient}"

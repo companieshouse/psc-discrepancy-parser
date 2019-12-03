@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.json.JsonSanitizer;
 import model.PscDiscrepancySurvey;
 import parser.PscDiscrepancySurveyCsvProcessor.PscDiscrepancyCreatedListener;
 
@@ -34,8 +35,9 @@ public class PscDiscrepancyFoundListenerImpl implements PscDiscrepancyCreatedLis
         try {
             discrepancy.setRequestId(requestId);
             String discrepancyJson = objectMapper.writeValueAsString(discrepancy);
-            StringEntity entity = new StringEntity(discrepancyJson);
-            LOG.info("Callback for discrepancy: {}", discrepancyJson);
+            String sanitisedJson = JsonSanitizer.sanitize(discrepancyJson);
+            StringEntity entity = new StringEntity(sanitisedJson);
+            LOG.info("Callback for discrepancy: {}", sanitisedJson);
             HttpPost httpPost = new HttpPost(postUrl);
             httpPost.setEntity(entity);
             httpPost.setHeader("Content-type", "text/plain");
