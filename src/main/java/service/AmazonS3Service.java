@@ -7,7 +7,7 @@ import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import provider.AmazonS3Provider;
 
 public class AmazonS3Service {
-    private final AmazonS3Provider amazonS3Provider = new AmazonS3Provider();
+    private AmazonS3Provider amazonS3Provider = new AmazonS3Provider();
 
     public String getKey(S3EventNotificationRecord record) {
         return record.getS3().getObject().getKey();
