@@ -17,11 +17,12 @@ class MailParserTest {
                     "\"one\",\"two\",\"three\"\r\n\"four\",\"five\",\"six\"\r\n";
 
     private MailParserFactory mailParserFactory;
-    
+
     @BeforeEach
     void setup() {
         mailParserFactory = new MailParserFactory();
     }
+
     @Test
     void mailContainingCsvIsDecodable() throws MessagingException, IOException {
         InputStream msgIs = getFileInputStream("src/test/resources/smallCsv.eml");
@@ -33,7 +34,8 @@ class MailParserTest {
         // The actual decoded bytes seem to start with 0xFF, not a legal UTF-8 character.
         // These are real emails being decoded (albeit anonymised) with real attachments.
         // I can only assume that the start bytes are something weird like magic file bytes.
-        // The resulting string does decode properly in a CSV parser, so we have chosen not to worry.
+        // The resulting string does decode properly in a CSV parser, so we have chosen not to
+        // worry.
         // The same applies for every positive test, using contains rather than an exact match.
         assertTrue(extractedCsvAsString.contains(EXPECTED));
     }

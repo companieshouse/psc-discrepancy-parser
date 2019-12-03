@@ -17,7 +17,6 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -56,8 +55,8 @@ public class PscDiscrepancyFoundListenerImplTest {
 
     @BeforeEach
     public void setUp() {
-        pscDiscrepancyFoundListenerImpl =
-                        new PscDiscrepancyFoundListenerImpl(client, REST_API, objectMapper, CORRELATION_ID);
+        pscDiscrepancyFoundListenerImpl = new PscDiscrepancyFoundListenerImpl(client, REST_API,
+                        objectMapper, CORRELATION_ID);
         discrepancy = new PscDiscrepancySurvey();
     }
 
@@ -70,9 +69,9 @@ public class PscDiscrepancyFoundListenerImplTest {
 
         assertTrue(pscDiscrepancyFoundListenerImpl.created(discrepancy));
 
-        verify(client).execute((HttpUriRequest) argCaptor.capture());
+        verify(client).execute(argCaptor.capture());
 
-        HttpPost httpPost = (HttpPost) argCaptor.getValue();
+        HttpPost httpPost = argCaptor.getValue();
         StringEntity stringEntity = (StringEntity) httpPost.getEntity();
         String result = IOUtils.toString(stringEntity.getContent());
         assertEquals("\"jsonSuccessful\"", result);
@@ -88,9 +87,9 @@ public class PscDiscrepancyFoundListenerImplTest {
 
         assertFalse(pscDiscrepancyFoundListenerImpl.created(discrepancy));
 
-        verify(client).execute((HttpUriRequest) argCaptor.capture());
+        verify(client).execute(argCaptor.capture());
 
-        HttpPost httpPost = (HttpPost) argCaptor.getValue();
+        HttpPost httpPost = argCaptor.getValue();
         StringEntity stringEntity = (StringEntity) httpPost.getEntity();
         String result = IOUtils.toString(stringEntity.getContent());
         assertEquals("\"jsonUnsuccessful\"", result);
@@ -100,7 +99,8 @@ public class PscDiscrepancyFoundListenerImplTest {
     public void testThrowsJsonProcessingException() throws ClientProtocolException, IOException {
         when(objectMapper.writeValueAsString(discrepancy))
                         .thenThrow(new JsonProcessingException("") {
-                            private static final long serialVersionUID = 1L;});
+                            private static final long serialVersionUID = 1L;
+                        });
 
         assertFalse(pscDiscrepancyFoundListenerImpl.created(discrepancy));
     }

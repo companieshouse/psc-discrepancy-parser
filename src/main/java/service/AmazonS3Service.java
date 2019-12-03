@@ -21,7 +21,8 @@ public class AmazonS3Service {
         return amazonS3Provider.provide().getObject(s3Bucket, s3Key);
     }
 
-    public void putFileInS3(String s3Bucket, String s3Key, S3ObjectInputStream input, ObjectMetadata omd) {
+    public void putFileInS3(String s3Bucket, String s3Key, S3ObjectInputStream input,
+                    ObjectMetadata omd) {
         amazonS3Provider.provide().putObject(s3Bucket, s3Key, input, omd);
     }
 

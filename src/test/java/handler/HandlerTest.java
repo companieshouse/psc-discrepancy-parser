@@ -43,7 +43,7 @@ public class HandlerTest {
     private static final String REJECTED_FILE_NAME = "rejected/fileName.csv";
     private byte[] extractedCsv;
 
-    private List<S3EventNotificationRecord> records = new ArrayList<>();
+    private final List<S3EventNotificationRecord> records = new ArrayList<>();
 
     @Captor
     private ArgumentCaptor<String> argCaptor;
@@ -93,7 +93,7 @@ public class HandlerTest {
                         any(PscDiscrepancyFoundListenerImpl.class))).thenReturn(csvParser);
         when(csvParser.parseRecords()).thenReturn(true);
         String result = handler.handleRequest(s3Event, context);
-        verify(amazonS3Service).putFileInS3(anyString(), (String) argCaptor.capture(),
+        verify(amazonS3Service).putFileInS3(anyString(), argCaptor.capture(),
                         any(S3ObjectInputStream.class), any(ObjectMetadata.class));
         assertEquals(ACCEPTED_FILE_NAME, argCaptor.getValue());
         assertEquals("ok", result);
@@ -106,7 +106,7 @@ public class HandlerTest {
                         any(PscDiscrepancyFoundListenerImpl.class))).thenReturn(csvParser);
         when(csvParser.parseRecords()).thenReturn(false);
         String result = handler.handleRequest(s3Event, context);
-        verify(amazonS3Service).putFileInS3(anyString(), (String) argCaptor.capture(),
+        verify(amazonS3Service).putFileInS3(anyString(), argCaptor.capture(),
                         any(S3ObjectInputStream.class), any(ObjectMetadata.class));
         assertEquals(REJECTED_FILE_NAME, argCaptor.getValue());
         assertEquals("ok", result);
@@ -118,7 +118,7 @@ public class HandlerTest {
         when(mailParser.extractCsvAttachment()).thenThrow(new MessagingException());
 
         String result = handler.handleRequest(s3Event, context);
-        verify(amazonS3Service).putFileInS3(anyString(), (String) argCaptor.capture(),
+        verify(amazonS3Service).putFileInS3(anyString(), argCaptor.capture(),
                         any(S3ObjectInputStream.class), any(ObjectMetadata.class));
         assertEquals(REJECTED_FILE_NAME, argCaptor.getValue());
         assertEquals("ok", result);
@@ -130,7 +130,7 @@ public class HandlerTest {
         when(mailParser.extractCsvAttachment()).thenThrow(new IOException());
 
         String result = handler.handleRequest(s3Event, context);
-        verify(amazonS3Service).putFileInS3(anyString(), (String) argCaptor.capture(),
+        verify(amazonS3Service).putFileInS3(anyString(), argCaptor.capture(),
                         any(S3ObjectInputStream.class), any(ObjectMetadata.class));
         assertEquals(REJECTED_FILE_NAME, argCaptor.getValue());
         assertEquals("ok", result);

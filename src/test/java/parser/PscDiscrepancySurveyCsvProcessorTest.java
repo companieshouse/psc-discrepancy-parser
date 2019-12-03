@@ -30,6 +30,7 @@ class PscDiscrepancySurveyCsvProcessorTest {
     private ArgumentCaptor<PscDiscrepancySurvey> PscDiscrepancySurveyArg;
 
     private PscDiscrepancySurveyCsvProcessorFactory factory;
+
     @BeforeEach
     void setup() {
         factory = new PscDiscrepancySurveyCsvProcessorFactory();
