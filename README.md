@@ -33,6 +33,23 @@ Within this project, in the test code area, is a class called SupportUtils. This
 When this Lambda runs, it attempts to process the new file in S3 as follows:
 ![alt text](design/LambdaActivity.svg)
 
+### Libraries used
+* logging
+  * AWS logging libraries
+  * log4j 2
+* email parsing
+  * JavaMail
+* CSV parsing
+  * Apache Commons CSV
+* JSON
+  * Jackson
+  * JSON Sanitizer
+* HTTP Client
+  * Apache HTTP Client
+* Testing
+  * JUnit 5
+  * Mockito
+  * Sonar
 ## TODO:
 rename MailParser to CsvExtractor
 Rename PscDiscrepancySurveyCsvProcessor to CsvProcessor

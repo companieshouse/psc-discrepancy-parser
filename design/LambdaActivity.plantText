@@ -24,7 +24,10 @@ else (yes)
     while (while more CSV records)
         :create PscDiscrepancySurvey;
         if (can read CSV and create PscDiscrepancySurvey) then (yes)
-            :Invoke PscDiscrepancyFoundListener callback\nwhich will POST PscDiscrepancySurvey;
+            :Invoke PscDiscrepancyFoundListener callback;
+            :Convert PscDiscrepancySurvey to JSON;
+            :Sanitise JSON;
+            :POST JSON to configured endpoint;
             if (test POST response) then (failed)
                 :note failure;
             endif
@@ -46,4 +49,3 @@ endif
 stop
 
 @enduml
-
