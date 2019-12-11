@@ -3,6 +3,8 @@ package service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.amazonaws.services.s3.model.CopyObjectRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +24,7 @@ import provider.AmazonS3Provider;
 @ExtendWith(MockitoExtension.class)
 public class AmazonS3ServiceTest {
     private static final String KEY = "fileName";
+    private static final String DESTINATION_KEY = "newFolder/fileName";
     private static final String BUCKET = "bucketName";
 
     @Mock
@@ -90,8 +93,9 @@ public class AmazonS3ServiceTest {
     @DisplayName("Successful upload of file in S3")
     void putFile_Successful() {
         when(amazonS3Provider.provide()).thenReturn(s3Client);
-        amazonS3Service.putFileInS3(BUCKET, KEY, s3ObjectInputStream, objectMetadata);
+        CopyObjectRequest copyObjectRequest = new CopyObjectRequest(BUCKET, KEY, BUCKET, DESTINATION_KEY);
+        amazonS3Service.moveFileInS3(copyObjectRequest);
 
-        verify(s3Client).putObject(BUCKET, KEY, s3ObjectInputStream, objectMetadata);
+        verify(s3Client).copyObject(copyObjectRequest);
     }
 }

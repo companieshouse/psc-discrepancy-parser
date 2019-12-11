@@ -2,13 +2,14 @@ package handler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.mail.MessagingException;
+
+import com.amazonaws.services.s3.model.CopyObjectRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,7 +24,6 @@ import org.mockito.quality.Strictness;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.S3Event;
 import com.amazonaws.services.s3.event.S3EventNotification.S3EventNotificationRecord;
-import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import parser.MailParser;
@@ -31,7 +31,6 @@ import parser.MailParserFactory;
 import parser.PscDiscrepancySurveyCsvProcessor;
 import parser.PscDiscrepancySurveyCsvProcessorFactory;
 import service.AmazonS3Service;
-import uk.gov.companieshouse.environment.EnvironmentReader;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.STRICT_STUBS)
@@ -46,7 +45,7 @@ public class HandlerTest {
     private final List<S3EventNotificationRecord> records = new ArrayList<>();
 
     @Captor
-    private ArgumentCaptor<String> argCaptor;
+    private ArgumentCaptor<CopyObjectRequest> argCaptor;
 
     @Mock
     private S3Event s3Event;
@@ -58,8 +57,6 @@ public class HandlerTest {
     private S3EventNotificationRecord record;
     @Mock
     private AmazonS3Service amazonS3Service;
-    @Mock
-    private EnvironmentReader environmentReader;
     @Mock
     private Context context;
     @Mock
@@ -93,9 +90,11 @@ public class HandlerTest {
                         any(PscDiscrepancyFoundListenerImpl.class))).thenReturn(csvParser);
         when(csvParser.parseRecords()).thenReturn(true);
         String result = handler.handleRequest(s3Event, context);
-        verify(amazonS3Service).putFileInS3(anyString(), argCaptor.capture(),
-                        any(S3ObjectInputStream.class), any(ObjectMetadata.class));
-        assertEquals(ACCEPTED_FILE_NAME, argCaptor.getValue());
+        verify(amazonS3Service).moveFileInS3(argCaptor.capture());
+        assertEquals(BUCKET_NAME, argCaptor.getValue().getSourceBucketName());
+        assertEquals(SOURCE_FILE_NAME, argCaptor.getValue().getSourceKey());
+        assertEquals(BUCKET_NAME, argCaptor.getValue().getDestinationBucketName());
+        assertEquals(ACCEPTED_FILE_NAME, argCaptor.getValue().getDestinationKey());
         assertEquals("ok", result);
     }
 
@@ -106,9 +105,11 @@ public class HandlerTest {
                         any(PscDiscrepancyFoundListenerImpl.class))).thenReturn(csvParser);
         when(csvParser.parseRecords()).thenReturn(false);
         String result = handler.handleRequest(s3Event, context);
-        verify(amazonS3Service).putFileInS3(anyString(), argCaptor.capture(),
-                        any(S3ObjectInputStream.class), any(ObjectMetadata.class));
-        assertEquals(REJECTED_FILE_NAME, argCaptor.getValue());
+        verify(amazonS3Service).moveFileInS3(argCaptor.capture());
+        assertEquals(BUCKET_NAME, argCaptor.getValue().getSourceBucketName());
+        assertEquals(SOURCE_FILE_NAME, argCaptor.getValue().getSourceKey());
+        assertEquals(BUCKET_NAME, argCaptor.getValue().getDestinationBucketName());
+        assertEquals(REJECTED_FILE_NAME, argCaptor.getValue().getDestinationKey());
         assertEquals("ok", result);
     }
 
@@ -118,9 +119,11 @@ public class HandlerTest {
         when(mailParser.extractCsvAttachment()).thenThrow(new MessagingException());
 
         String result = handler.handleRequest(s3Event, context);
-        verify(amazonS3Service).putFileInS3(anyString(), argCaptor.capture(),
-                        any(S3ObjectInputStream.class), any(ObjectMetadata.class));
-        assertEquals(REJECTED_FILE_NAME, argCaptor.getValue());
+        verify(amazonS3Service).moveFileInS3(argCaptor.capture());
+        assertEquals(BUCKET_NAME, argCaptor.getValue().getSourceBucketName());
+        assertEquals(SOURCE_FILE_NAME, argCaptor.getValue().getSourceKey());
+        assertEquals(BUCKET_NAME, argCaptor.getValue().getDestinationBucketName());
+        assertEquals(REJECTED_FILE_NAME, argCaptor.getValue().getDestinationKey());
         assertEquals("ok", result);
     }
 
@@ -130,9 +133,11 @@ public class HandlerTest {
         when(mailParser.extractCsvAttachment()).thenThrow(new IOException());
 
         String result = handler.handleRequest(s3Event, context);
-        verify(amazonS3Service).putFileInS3(anyString(), argCaptor.capture(),
-                        any(S3ObjectInputStream.class), any(ObjectMetadata.class));
-        assertEquals(REJECTED_FILE_NAME, argCaptor.getValue());
+        verify(amazonS3Service).moveFileInS3(argCaptor.capture());
+        assertEquals(BUCKET_NAME, argCaptor.getValue().getSourceBucketName());
+        assertEquals(SOURCE_FILE_NAME, argCaptor.getValue().getSourceKey());
+        assertEquals(BUCKET_NAME, argCaptor.getValue().getDestinationBucketName());
+        assertEquals(REJECTED_FILE_NAME, argCaptor.getValue().getDestinationKey());
         assertEquals("ok", result);
     }
 }
