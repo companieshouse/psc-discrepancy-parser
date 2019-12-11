@@ -66,17 +66,17 @@ public class Handler implements RequestHandler<S3Event, String> {
             try {
                 MailParser mailParser = mailParserFactory.createMailParser(in);
                 byte[] extractedCsv = mailParser.extractCsvAttachment();
-                LOG.error("Parsed email");
+                LOG.info("Parsed email");
 
                 try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
                     PscDiscrepancyFoundListenerImpl listener = new PscDiscrepancyFoundListenerImpl(
                                     httpClient, chipsEnvUri, new ObjectMapper(), requestId);
                     PscDiscrepancySurveyCsvProcessor csvParser = csvParserFactory
                                     .createPscDiscrepancySurveyCsvProcessor(extractedCsv, listener);
-                    LOG.error("About to parse CSV");
+                    LOG.info("About to parse CSV");
                     boolean isParsed = csvParser.parseRecords();
                     moveProcessedFile(s3Bucket, s3Key, in, isParsed);
-                    LOG.error("Finished processing CSV");
+                    LOG.info("Finished processing CSV");
                 }
             } catch (MessagingException me) {
                 LOG.error("Email: " + s3Key
