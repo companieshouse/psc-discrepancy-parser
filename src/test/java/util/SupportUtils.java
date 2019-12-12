@@ -16,7 +16,36 @@ import parser.MailParser;
 import parser.PscDiscrepancySurveyCsvProcessor;
 import parser.PscDiscrepancySurveyCsvProcessor.PscDiscrepancyCreatedListener;
 
+/**
+ * Utility to be used when examining bugs in the main code. Given a file that is an email, or a CSV,
+ * the methods in this class can be used to run the parser parts of this project to see what blows
+ * up.
+ * <h2>An example</h2>
+ * 
+ * <pre>
+ * <code>
+* {@code
+* // Extract CSV attachment from email, print out the CSV to stdout, foreach CSV record,
+* // turn it into JSON, printing out that JSON
+* // and each JSON record
+* extractCsvProcessAndDump(pathToEmail);
+* 
+* // Extract CSV attachment from email, print out the CSV to stdout
+* extractCsvFromEmailAndDump(pathToEmail);
+* 
+* // Read a CSV file, parse it, turning each CSV record into
+* // JSON, printing out that JSON
+* byte[] csvBytes = getBytesFromFile(pathToCsv);
+* processCsvAndDump(csvBytes);
+* }
+* </code>
+ * </pre>
+ */
 public class SupportUtils {
+    /**
+     * Listener for PscDiscrepancySurvey created events, which prints each discrepancy survey to
+     * stdout.
+     */
     private static class PscDiscrepancyDumpingListener implements PscDiscrepancyCreatedListener {
         @Override
         public boolean created(PscDiscrepancySurvey discrepancy) {
@@ -28,11 +57,8 @@ public class SupportUtils {
 
     public static void main(String[] args) {
         try {
-            // String emailPath = "";
+            // An example. See Javadocs for what to replace this with.
             String csvPath = "src/test/resources/oneGoodRecord.csv";
-            // byte[] extractedCsv = extractCsvFromEmailAndDump(emailPath);
-            // processCsvAndDump(extractedCsv);
-            // extractCsvProcessAndDump(emailPath);
             byte[] cvsvBytesFromFile = getBytesFromFile(csvPath);
             processCsvAndDump(cvsvBytesFromFile);
         } catch (Exception e) {
@@ -40,12 +66,30 @@ public class SupportUtils {
         }
     }
 
+    /**
+     * Given a path to a local file, attempts to parse that file as an email, extract a CSV
+     * attachment, print that CSV attachment to sdout, parse the CSV, transforming each record into
+     * JSON, printing each JSON object to stdout.
+     * 
+     * @param emailPath
+     * @throws MessagingException
+     * @throws IOException
+     */
     public static void extractCsvProcessAndDump(String emailPath)
                     throws MessagingException, IOException {
         byte[] csvBytes = extractCsvFromEmail(emailPath);
         processCsvAndDump(csvBytes);
     }
 
+    /**
+     * Given a path to a local file, attempts to parse that file as an email, extract a CSV
+     * attachment, print that CSV attachment to sdout, parse the CSV, transforming each record into
+     * JSON, printing each JSON object to stdout.
+     * 
+     * @param emailPath
+     * @throws MessagingException
+     * @throws IOException
+     */
     public static byte[] extractCsvFromEmailAndDump(String filename)
                     throws MessagingException, IOException {
         byte[] parsedCsvBytes = extractCsvFromEmail(filename);
@@ -54,6 +98,15 @@ public class SupportUtils {
         return parsedCsvBytes;
     }
 
+    /**
+     * Given a path to a local file, attempts to parse that file as an email, extract a CSV
+     * attachment, print that CSV attachment to sdout, finally returning the attachment as a byte
+     * array, which can be fed to {@link #processCsvAndDump(byte[])}.
+     * 
+     * @param emailPath
+     * @throws MessagingException
+     * @throws IOException
+     */
     public static byte[] extractCsvFromEmail(String filename)
                     throws MessagingException, IOException {
         InputStream is = getFileInputStream(filename);
@@ -61,18 +114,40 @@ public class SupportUtils {
         return mp.extractCsvAttachment();
     }
 
+    /**
+     * Given a byte[] bytes, attempt to parse those bytes as CSV, transforming each record into
+     * JSON, printing each JSON object to stdout.
+     * 
+     * @param bytes
+     * @return
+     * @throws IOException
+     */
     public static boolean processCsvAndDump(byte[] bytes) throws IOException {
         PscDiscrepancySurveyCsvProcessor processor = new PscDiscrepancySurveyCsvProcessor(bytes,
                         new PscDiscrepancyDumpingListener());
         return processor.parseRecords();
     }
 
+    /**
+     * Given the path to a file, return an InputStream for that file.
+     * 
+     * @param filename
+     * @return
+     * @throws FileNotFoundException
+     */
     private static InputStream getFileInputStream(String filename) throws FileNotFoundException {
         File fl = new File(filename);
         FileInputStream fin = new FileInputStream(fl);
         return new BufferedInputStream(fin);
     }
 
+    /**
+     * Given a path to a file, fully read that file into a byte array, which is returned.
+     * 
+     * @param filename
+     * @return
+     * @throws IOException
+     */
     private static byte[] getBytesFromFile(String filename) throws IOException {
         Path fileLocation = Paths.get(filename);
         return Files.readAllBytes(fileLocation);
