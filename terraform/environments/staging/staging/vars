@@ -1,19 +1,13 @@
 # ------------------------------------------------------------------------------
 # Environment
 # ------------------------------------------------------------------------------
-aws_bucket = "staging-eu-west-2.terraform-state.ch.gov.uk"
 aws_region = "eu-west-2"
 aws_ses_region = "eu-west-1"
 environment = "staging"
 deploy_to = "staging"
 state_prefix = "env:/staging"
-networks_state_bucket = "ch-service-staging-terraform-state"
-psc_discrepancy_bucket = "ch-psc-discrepancy-reports-staging"
 workspace_key_prefix = "psc-discrepancy-parser"
 state_file_name = "psc-discrepancy-parser.tfstate"
-release_bucket_name = "ch-service-staging-release.ch.gov.uk"
 psc_email_recipient = "stagingaml@stagingaml.companieshouse.gov.uk"
 psc_discrepancy_bucket_prefix = "source/"
 rule_set_name = "default-rule-set"
-chips_rest_interface_endpoint = "http://172.24.10.192/chips-restService/rest/chipsgeneric/pscDiscrepancies"
-vpc_id = {eu-west-2 = "vpc-078f17c92318f0ded"}
