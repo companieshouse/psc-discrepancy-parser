@@ -44,6 +44,26 @@ Within this project, in the test code area, is a class called SupportUtils. This
 When this Lambda runs, it attempts to process the new file in S3 as follows:
 ![alt text](design/LambdaActivity.svg)
 
+### Design principles
+#### Platform agnosticism: do not get too tied into AWS
+It is possible to litter our code with AWS-specific libs. This needlessly ties us to AWS, as this is a Lambda function, and most of it has nothing to do with AWS. It should be easy to port to Azure, or similar so that we could move our code off AWS, if we needed to. With this in mind, we have tried to strike a balance.
+
+#### Logging
+All logging must use the underlying AWS platform, but by using log4j2 libs and the aws-lambda-java-log4j2 lib (along with their dependencies), we eliminate the need to use AWS logging classes anywhere: our code can just use log4j 2. We are not using the CH structured logging libs at this time, as they are not built to go on top of AWS lambda logging. Thus, our log lines are not structured JSON, though they could be at a future date, using log4j2 directly.
+
+Logging is all currently at INFO or ERROR, with only support-worthy events being logged at ERROR.
+
+#### S3
+The S3-specific code is constrained to the Handler class. In fact, all AWS-specific code should be in here, with no other major components knowing about AWS. We have not abstracted out S3, but there is so little of it that it would not be a big job to refactor if we moved to a different platform.
+
+The S3ObjectInputStream retrieved from the S3Object is not used directly: instead we just use the InputStream interface in our parser classes.
+
+#### Exception handling
+Any unexpected RuntimeException is allowed to escape the Lambda unlogged. This means that, in the event of such an exception, the file being parsed  would be left in the `source` folder, and not moved to the `rejected` folder. This is not as bad as it sounds, as even using an outer boundary of the form `try... catch (RuntimeException) { move to rejected }` would fail in some circumstances: bugs in our S3 code, failure to start Lambda properly... etc. Thus, there would always be a need for support to cope with a file being wedged in the `source` folder. We could still put such an outer try... catch RuntimeException block in though - there was debate within the team and we decided to take the current course on the general principle that it is bad to catch unexpected RuntimeExceptions.
+
+#### Unit testing
+With regard to the parsers, we have generally chosen to treat them as black boxes and not to mock out the underlying 3rd party libs. This is a classical, TDD approach that was questioned during dev so I am justifying the decision here, as others may ask the same question. It should not matter to the user of the MailParser that it uses JavaMail underneath, nor that the code transforming the CSV file into a POJO (later JSON) uses a particular CSV lib. We could mock out those libs, but we would end up with very brittle tests. Instead, we have gone for the approach of supplying test files containing real emails (anonymised) or CSV from the actual surveys and testing the output of the respective parsers. This is an approach to unit testing sometimes known as sociable unit testing. See: https://martinfowler.com/articles/practical-test-pyramid.html#SociableAndSolitary
+
 ### Libraries used
 * logging
   * AWS logging libraries
@@ -61,9 +81,3 @@ When this Lambda runs, it attempts to process the new file in S3 as follows:
   * JUnit 5
   * Mockito
   * Sonar
-
-## TODO:
-rename MailParser to CsvExtractor
-Rename PscDiscrepancySurveyCsvProcessor to CsvProcessor
-Rename PscDiscrepancySurveyCsvProcessorFactory to CsvProcessorFactory
-Rename PscDiscrepancySurveyCreatedListener to CsvProcessorListener
