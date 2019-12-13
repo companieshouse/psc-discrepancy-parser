@@ -64,6 +64,12 @@ Any unexpected RuntimeException is allowed to escape the Lambda unlogged. This m
 #### Unit testing
 With regard to the parsers, we have generally chosen to treat them as black boxes and not to mock out the underlying 3rd party libs. This is a classical, TDD approach that was questioned during dev so I am justifying the decision here, as others may ask the same question. It should not matter to the user of the MailParser that it uses JavaMail underneath, nor that the code transforming the CSV file into a POJO (later JSON) uses a particular CSV lib. We could mock out those libs, but we would end up with very brittle tests. Instead, we have gone for the approach of supplying test files containing real emails (anonymised) or CSV from the actual surveys and testing the output of the respective parsers. This is an approach to unit testing sometimes known as sociable unit testing. See: https://martinfowler.com/articles/practical-test-pyramid.html#SociableAndSolitary
 
+## Security
+* Files are stored in S3 in a private bucket.
+* Logging tries not to log Personally Identifying Info (PII) at any level.
+* JSON sent over to CHIPS is first processed using the OWASP JSON Sanitizer lib: https://github.com/OWASP/json-sanitizer to prevent a subset of possible CSS attacks.
+* CHIPS has further mitigations in place against CSS attacks.
+
 ### Libraries used
 * logging
   * AWS logging libraries
