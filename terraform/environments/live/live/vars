@@ -1,0 +1,13 @@
+# ------------------------------------------------------------------------------
+# Environment
+# ------------------------------------------------------------------------------
+aws_region = "eu-west-2"
+aws_ses_region = "eu-west-1"
+environment = "live"
+deploy_to = "live"
+state_prefix = "env:/live"
+workspace_key_prefix = "psc-discrepancy-parser"
+state_file_name = "psc-discrepancy-parser.tfstate"
+psc_email_recipient = "pscdiscrepancyreport@pscdiscrepancyreport.companieshouse.gov.uk"
+psc_discrepancy_bucket_prefix = "source/"
+rule_set_name = "default-rule-set"
