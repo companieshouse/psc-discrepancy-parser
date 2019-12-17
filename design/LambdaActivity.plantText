@@ -1,0 +1,51 @@
+@startuml
+
+title PSC Discrepancy Parser Lambda Activity Diagram \n
+
+start
+note right
+    * email saved to S3
+    * Lambda triggered
+endnote
+:Read email using\nMailParser;
+note right
+    * parse file as email
+    * check that it is is multipart/mixed
+    * iterate over the parts lookikng for an attachment
+    * look for the first attachment with a *.CSV filename and BASE64 encoding
+    * decode that attachment using BASE64 and return it
+end note
+
+if (attachment can be extracted) then (no)
+  :note failure;
+else (yes)
+  :Process attachment using\nPscDiscrepancySurveyCsvProcessor;
+  if (can parse as CSV) then (yes)
+    while (while more CSV records)
+        :create PscDiscrepancySurvey;
+        if (can read CSV and create PscDiscrepancySurvey) then (yes)
+            :Invoke PscDiscrepancyFoundListener callback;
+            :Convert PscDiscrepancySurvey to JSON;
+            :Sanitise JSON;
+            :POST JSON to configured endpoint;
+            if (test POST response) then (failed)
+                :note failure;
+            endif
+        else (no)
+            :note failure;
+        endif
+    endwhile
+  else (no)
+	:note failure;
+  endif
+endif
+if (failure noted) then (failure noted)
+    :move file to failed folder;
+else (all CSV parsed and sent over REST)
+    :move file to succeeded folder;
+endif
+
+
+stop
+
+@enduml
