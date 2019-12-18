@@ -1,7 +1,11 @@
 package handler;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import javax.mail.MessagingException;
+
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.util.IOUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.LogManager;
@@ -63,6 +67,16 @@ public class Handler implements RequestHandler<S3Event, String> {
                             s3Bucket, s3Object);
             S3ObjectInputStream in = s3Object.getObjectContent();
 
+            byte[] bytes = new byte[0];
+            try {
+                bytes = IOUtils.toByteArray(in);
+            } catch (IOException e) {
+                LOG.error("There are no contents in the email: " + s3Key + " moving to the rejected folder");
+            }
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(bytes.length);
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+
             try {
                 MailParser mailParser = mailParserFactory.createMailParser(in);
                 byte[] extractedCsv = mailParser.extractCsvAttachment();
@@ -83,12 +97,14 @@ public class Handler implements RequestHandler<S3Event, String> {
                                 + " is corrupt or missing attachment - moving to rejected folder",
                                 me);
                 String changedS3key = s3Key.replace(SOURCE_FOLDER_PREFIX, REJECTED_FOLDER_PREFIX);
-                amazonS3Service.putFileInS3(s3Bucket, changedS3key, in, new ObjectMetadata());
+                PutObjectRequest putObjectRequest = new PutObjectRequest(s3Bucket, changedS3key, byteArrayInputStream, metadata);
+                amazonS3Service.putFileInS3(putObjectRequest);
             } catch (IOException e) {
                 LOG.error("The attachment in the email: " + s3Key
                                 + " is not found - moving to the rejected folder");
                 String changedS3key = s3Key.replace(SOURCE_FOLDER_PREFIX, REJECTED_FOLDER_PREFIX);
-                amazonS3Service.putFileInS3(s3Bucket, changedS3key, in, new ObjectMetadata());
+                PutObjectRequest putObjectRequest = new PutObjectRequest(s3Bucket, changedS3key, byteArrayInputStream, metadata);
+                amazonS3Service.putFileInS3(putObjectRequest);
             }
         }
         LOG.info("handleRequest exit");
@@ -97,12 +113,25 @@ public class Handler implements RequestHandler<S3Event, String> {
 
     private void moveProcessedFile(String s3Bucket, String s3Key, S3ObjectInputStream in,
                     boolean isParsed) {
+        byte[] bytes = new byte[0];
+        try {
+            bytes = IOUtils.toByteArray(in);
+        } catch (IOException e) {
+            LOG.error("There are no contents in the email: " + s3Key + " moving to the rejected folder");
+        }
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(bytes.length);
+
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+
         if (isParsed) {
             String changedS3Key = s3Key.replace(SOURCE_FOLDER_PREFIX, ACCEPTED_FOLDER_PREFIX);
-            amazonS3Service.putFileInS3(s3Bucket, changedS3Key, in, new ObjectMetadata());
+            PutObjectRequest putObjectRequest = new PutObjectRequest(s3Bucket, changedS3Key, byteArrayInputStream, metadata);
+            amazonS3Service.putFileInS3(putObjectRequest);
         } else {
             String changedS3Key = s3Key.replace(SOURCE_FOLDER_PREFIX, REJECTED_FOLDER_PREFIX);
-            amazonS3Service.putFileInS3(s3Bucket, changedS3Key, in, new ObjectMetadata());
+            PutObjectRequest putObjectRequest = new PutObjectRequest(s3Bucket, changedS3Key, byteArrayInputStream, metadata);
+            amazonS3Service.putFileInS3(putObjectRequest);
         }
     }
 }
