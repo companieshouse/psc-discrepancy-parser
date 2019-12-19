@@ -47,7 +47,8 @@ public class Handler implements RequestHandler<S3Event, String> {
                 new PscDiscrepancySurveyCsvProcessorFactory());
     }
 
-    @Override public String handleRequest(S3Event s3event, Context context) {
+    @Override
+    public String handleRequest(S3Event s3event, Context context) {
         String chipsEnvUri = environmentReader.getMandatoryString(CHIPS_REST_INTERFACE_ENDPOINT);
         String requestId = context.getAwsRequestId();
         LOG.info("handleRequest entry for awsRequestId: {}", requestId);
