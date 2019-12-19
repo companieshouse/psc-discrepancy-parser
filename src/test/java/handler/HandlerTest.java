@@ -31,6 +31,7 @@ import parser.MailParserFactory;
 import parser.PscDiscrepancySurveyCsvProcessor;
 import parser.PscDiscrepancySurveyCsvProcessorFactory;
 import service.AmazonS3Service;
+import uk.gov.companieshouse.environment.EnvironmentReader;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.STRICT_STUBS)
@@ -57,6 +58,8 @@ public class HandlerTest {
     private S3EventNotificationRecord record;
     @Mock
     private AmazonS3Service amazonS3Service;
+    @Mock
+    private EnvironmentReader environmentReader;
     @Mock
     private Context context;
     @Mock
