@@ -12,17 +12,22 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.json.JsonSanitizer;
 import model.PscDiscrepancySurvey;
-import parser.PscDiscrepancySurveyCsvProcessor.PscDiscrepancyCreatedListener;
+import parser.CsvProcessor.CsvProcessorListener;
 
-public class PscDiscrepancyFoundListenerImpl implements PscDiscrepancyCreatedListener {
+/**
+ * Listens for the creation of a PscDiscrepancySurvey, converts it to JSON, and sends by HTTP POST
+ * it to the supplied URL.
+ *
+ */
+public class PscDiscrepancySurveySender implements CsvProcessorListener {
 
-    private static final Logger LOG = LogManager.getLogger(PscDiscrepancyFoundListenerImpl.class);
+    private static final Logger LOG = LogManager.getLogger(PscDiscrepancySurveySender.class);
     private final CloseableHttpClient client;
     private final String postUrl;
     private final ObjectMapper objectMapper;
     private final String requestId;
 
-    public PscDiscrepancyFoundListenerImpl(CloseableHttpClient client, String postUrl,
+    public PscDiscrepancySurveySender(CloseableHttpClient client, String postUrl,
                     ObjectMapper objectMapper, String requestId) {
         this.client = client;
         this.postUrl = postUrl;

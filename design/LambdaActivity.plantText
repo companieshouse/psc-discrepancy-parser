@@ -7,7 +7,7 @@ note right
     * email saved to S3
     * Lambda triggered
 endnote
-:Read email using\nMailParser;
+:Read email using\nCsvExtractor;
 note right
     * parse file as email
     * check that it is is multipart/mixed
@@ -19,12 +19,12 @@ end note
 if (attachment can be extracted) then (no)
   :note failure;
 else (yes)
-  :Process attachment using\nPscDiscrepancySurveyCsvProcessor;
+  :Process attachment using\nCsvProcessor;
   if (can parse as CSV) then (yes)
     while (while more CSV records)
         :create PscDiscrepancySurvey;
         if (can read CSV and create PscDiscrepancySurvey) then (yes)
-            :Invoke PscDiscrepancyFoundListener callback;
+            :Invoke CsvProcessorListener callback;
             :Convert PscDiscrepancySurvey to JSON;
             :Sanitise JSON;
             :POST JSON to configured endpoint;

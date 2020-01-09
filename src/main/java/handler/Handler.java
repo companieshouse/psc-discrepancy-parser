@@ -14,14 +14,18 @@ import com.amazonaws.services.s3.event.S3EventNotification.S3EventNotificationRe
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import parser.MailParser;
-import parser.MailParserFactory;
-import parser.PscDiscrepancySurveyCsvProcessor;
-import parser.PscDiscrepancySurveyCsvProcessorFactory;
+import parser.CsvExtractor;
+import parser.CsvExtractorFactory;
+import parser.CsvProcessor;
+import parser.CsvProcessorFactory;
 import service.AmazonS3Service;
 import uk.gov.companieshouse.environment.EnvironmentReader;
 import uk.gov.companieshouse.environment.impl.EnvironmentReaderImpl;
 
+/**
+ * Entry point for Lambda. The AWS infrastructure constructs this using the no-arg constructor and
+ * invokes {@link #handleRequest(S3Event, Context)}.
+ */
 public class Handler implements RequestHandler<S3Event, String> {
     private static final String SOURCE_FOLDER_PREFIX = "source/";
     private static final String REJECTED_FOLDER_PREFIX = "rejected/";
@@ -30,21 +34,21 @@ public class Handler implements RequestHandler<S3Event, String> {
     private static final Logger LOG = LogManager.getLogger(Handler.class);
     private final AmazonS3Service amazonS3Service;
     private final EnvironmentReader environmentReader;
-    private final MailParserFactory mailParserFactory;
-    private final PscDiscrepancySurveyCsvProcessorFactory csvParserFactory;
+    private final CsvExtractorFactory csvExtractorFactory;
+    private final CsvProcessorFactory csvParserFactory;
 
     protected Handler(AmazonS3Service amazonS3Service, EnvironmentReader environmentReader,
-            MailParserFactory mailParserFactory,
-            PscDiscrepancySurveyCsvProcessorFactory csvParserFactory) {
+            CsvExtractorFactory csvExtractorFactory,
+            CsvProcessorFactory csvParserFactory) {
         this.amazonS3Service = amazonS3Service;
         this.environmentReader = environmentReader;
-        this.mailParserFactory = mailParserFactory;
+        this.csvExtractorFactory = csvExtractorFactory;
         this.csvParserFactory = csvParserFactory;
     }
 
     public Handler() {
-        this(new AmazonS3Service(), new EnvironmentReaderImpl(), new MailParserFactory(),
-                new PscDiscrepancySurveyCsvProcessorFactory());
+        this(new AmazonS3Service(), new EnvironmentReaderImpl(), new CsvExtractorFactory(),
+                new CsvProcessorFactory());
     }
 
     @Override
@@ -59,16 +63,19 @@ public class Handler implements RequestHandler<S3Event, String> {
             LOG.info("handleRequest for S3 for s3Key: [{}], s3Bucket: [{}], s3Object: [{}]", s3Key,
                     s3Bucket, s3Object);
             S3ObjectInputStream in = s3Object.getObjectContent();
+
             try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-                MailParser mailParser = mailParserFactory.createMailParser(in);
-                byte[] extractedCsv = mailParser.extractCsvAttachment();
+                CsvExtractor csvExtractor = csvExtractorFactory.createMailParser(in);
+                byte[] extractedCsv = csvExtractor.extractCsvAttachment();
                 LOG.info("Parsed email");
-                PscDiscrepancyFoundListenerImpl listener =
-                        new PscDiscrepancyFoundListenerImpl(httpClient, chipsEnvUri,
+
+                PscDiscrepancySurveySender listener =
+                        new PscDiscrepancySurveySender(httpClient, chipsEnvUri,
                                 new ObjectMapper(), requestId);
-                PscDiscrepancySurveyCsvProcessor csvParser = csvParserFactory
+                CsvProcessor csvParser = csvParserFactory
                         .createPscDiscrepancySurveyCsvProcessor(extractedCsv, listener);
                 LOG.info("About to parse CSV");
+
                 if (csvParser.parseRecords()) {
                     LOG.info("Successfully processed CSV");
                     putFile(s3Bucket, s3Key, ACCEPTED_FOLDER_PREFIX);
