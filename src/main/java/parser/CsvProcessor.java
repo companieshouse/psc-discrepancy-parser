@@ -21,11 +21,11 @@ import model.PscDiscrepancySurveyQuestion;
 
 /**
  * Parses the supplied CSV record(s) (assuming their format to be specific to a PSC Discrepancy
- * Survey), transforming the CSV to JSON, each of which is then supplied to
- * PscDiscrepancyFoundListener. This class is not thread-safe and is designed to be used and
+ * Survey), transforming each line in the CSV to a POJO {@link PscDiscrepancySurvey}, each of which is then supplied to
+ * the supplied {@link CsvProcessorListener}. This class is not thread-safe and is designed to be used and
  * discarded in the same thread. It is not supposed to be reused.
  */
-public class PscDiscrepancySurveyCsvProcessor {
+public class CsvProcessor {
     private static final int INDEX_OF_OBLIGED_ENTITY_COMPANY_NAME = 0;
     private static final int INDEX_OF_OBLIGED_ENTITY_TYPE = 1;
     private static final int INDEX_OF_OBLIGED_ENTITY_CONTACT_NAME = 3;
@@ -50,22 +50,22 @@ public class PscDiscrepancySurveyCsvProcessor {
     private static final String NULL_FIELD = "-";
     private static final int CORRECT_RECORD_COLUMN_COUNT = 100;
     private static final String DATE_FORMAT = "dd/MM/yyyy";
-    private static final Logger LOG = LogManager.getLogger(PscDiscrepancySurveyCsvProcessor.class);
+    private static final Logger LOG = LogManager.getLogger(CsvProcessor.class);
 
     private final Reader reader;
-    private final PscDiscrepancyCreatedListener listener;
+    private final CsvProcessorListener listener;
     private boolean successfullyProcessedSoFar = true;
     private int currentRecordBeingParsed = -1;
 
     /**
      * Callback listener invoked for each PscDiscrepancySurvey instance created from a CSV record.
      */
-    public interface PscDiscrepancyCreatedListener {
+    public interface CsvProcessorListener {
         boolean created(PscDiscrepancySurvey discrepancy);
     }
 
-    public PscDiscrepancySurveyCsvProcessor(byte[] bytesToParse,
-                    PscDiscrepancyCreatedListener listener) {
+    public CsvProcessor(byte[] bytesToParse,
+                    CsvProcessorListener listener) {
         this.listener = listener;
         ByteArrayInputStream decodedBase64AsStream = new ByteArrayInputStream(bytesToParse);
         reader = new InputStreamReader(decodedBase64AsStream);

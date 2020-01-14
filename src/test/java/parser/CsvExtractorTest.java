@@ -12,22 +12,22 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class MailParserTest {
+class CsvExtractorTest {
     private static final String EXPECTED =
                     "\"one\",\"two\",\"three\"\r\n\"four\",\"five\",\"six\"\r\n";
 
-    private MailParserFactory mailParserFactory;
+    private CsvExtractorFactory csvExtractorFactory;
 
     @BeforeEach
     void setup() {
-        mailParserFactory = new MailParserFactory();
+        csvExtractorFactory = new CsvExtractorFactory();
     }
 
     @Test
     void mailContainingCsvIsDecodable() throws MessagingException, IOException {
         InputStream msgIs = getFileInputStream("src/test/resources/smallCsv.eml");
-        MailParser mailParser = mailParserFactory.createMailParser(msgIs);
-        byte[] extractedCsvAttachment = mailParser.extractCsvAttachment();
+        CsvExtractor csvExtractor = csvExtractorFactory.createMailParser(msgIs);
+        byte[] extractedCsvAttachment = csvExtractor.extractCsvAttachment();
         String extractedCsvAsString = new String(extractedCsvAttachment);
         // Note that an exact match could not be obtained, byte-for-byte,
         // so the looser 'contains' method is used in these tests, rather than equals.
@@ -44,8 +44,8 @@ class MailParserTest {
     void mailContainingMultipleCsvIsDecodableAndFirstCsvFileIsUsedOthersIgnored()
                     throws MessagingException, IOException {
         InputStream msgIs = getFileInputStream("src/test/resources/multiCsv.eml");
-        MailParser mailParser = mailParserFactory.createMailParser(msgIs);
-        byte[] extractedCsvAttachment = mailParser.extractCsvAttachment();
+        CsvExtractor csvExtractor = csvExtractorFactory.createMailParser(msgIs);
+        byte[] extractedCsvAttachment = csvExtractor.extractCsvAttachment();
         String extractedCsvAsString = new String(extractedCsvAttachment);
         assertTrue(extractedCsvAsString.contains(EXPECTED));
     }
@@ -56,8 +56,8 @@ class MailParserTest {
                     throws MessagingException, IOException {
         // The filename in this email ends in ".CSV", not ".csv"
         InputStream msgIs = getFileInputStream("src/test/resources/smallCsvWithUpperCSV.eml");
-        MailParser mailParser = mailParserFactory.createMailParser(msgIs);
-        byte[] extractedCsvAttachment = mailParser.extractCsvAttachment();
+        CsvExtractor csvExtractor = csvExtractorFactory.createMailParser(msgIs);
+        byte[] extractedCsvAttachment = csvExtractor.extractCsvAttachment();
         String extractedCsvAsString = new String(extractedCsvAttachment);
         assertTrue(extractedCsvAsString.contains(EXPECTED));
     }
@@ -66,18 +66,18 @@ class MailParserTest {
     @Test
     void mailContainingNoCsvThrowsMessagingEx() throws MessagingException, IOException {
         InputStream msgIs = getFileInputStream("src/test/resources/noCsvAttached.eml");
-        MailParser mailParser = mailParserFactory.createMailParser(msgIs);
+        CsvExtractor csvExtractor = csvExtractorFactory.createMailParser(msgIs);
         Assertions.assertThrows(MessagingException.class, () -> {
-            mailParser.extractCsvAttachment();
+            csvExtractor.extractCsvAttachment();
         });
     }
 
     @Test
     void mailThatIsNotMultipartMixedThrowsMessagingEx() throws MessagingException, IOException {
         InputStream msgIs = getFileInputStream("src/test/resources/notMultipart.eml");
-        MailParser mailParser = mailParserFactory.createMailParser(msgIs);
+        CsvExtractor csvExtractor = csvExtractorFactory.createMailParser(msgIs);
         Assertions.assertThrows(MessagingException.class, () -> {
-            mailParser.extractCsvAttachment();
+            csvExtractor.extractCsvAttachment();
         });
     }
 

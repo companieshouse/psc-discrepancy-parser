@@ -103,21 +103,3 @@ With regard to the parsers, we have generally chosen to treat them as black boxe
 * Logging tries not to log Personally Identifying Info (PII) at any level.
 * JSON sent over to CHIPS is first processed using the OWASP JSON Sanitizer lib: https://github.com/OWASP/json-sanitizer to prevent a subset of possible CSS attacks.
 * CHIPS has further mitigations in place against CSS attacks.
-
-### Libraries used
-* logging
-  * AWS logging libraries
-  * log4j 2
-* email parsing
-  * JavaMail
-* CSV parsing
-  * Apache Commons CSV
-* JSON
-  * Jackson
-  * JSON Sanitizer
-* HTTP Client
-  * Apache HTTP Client
-* Testing
-  * JUnit 5
-  * Mockito
-  * Sonar

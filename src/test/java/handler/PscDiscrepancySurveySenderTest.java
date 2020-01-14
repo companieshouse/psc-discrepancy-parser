@@ -29,11 +29,11 @@ import com.amazonaws.util.IOUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import model.PscDiscrepancySurvey;
-import parser.PscDiscrepancySurveyCsvProcessor.PscDiscrepancyCreatedListener;
+import parser.CsvProcessor.CsvProcessorListener;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class PscDiscrepancyFoundListenerImplTest {
+public class PscDiscrepancySurveySenderTest {
 
     @Mock
     private CloseableHttpResponse response;
@@ -51,11 +51,11 @@ public class PscDiscrepancyFoundListenerImplTest {
     private static final String REST_API = "http://test.ch:00000/chips";
     private PscDiscrepancySurvey discrepancy;
 
-    private PscDiscrepancyCreatedListener pscDiscrepancyFoundListenerImpl;
+    private CsvProcessorListener pscDiscrepancyFoundListenerImpl;
 
     @BeforeEach
     public void setUp() {
-        pscDiscrepancyFoundListenerImpl = new PscDiscrepancyFoundListenerImpl(client, REST_API,
+        pscDiscrepancyFoundListenerImpl = new PscDiscrepancySurveySender(client, REST_API,
                         objectMapper, CORRELATION_ID);
         discrepancy = new PscDiscrepancySurvey();
     }

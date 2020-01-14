@@ -19,10 +19,10 @@ import org.apache.logging.log4j.Logger;
 /**
  * Utility to extract a BASE64-encoded CSV attachment from a multipart/mixed email.
  */
-public class MailParser {
+public class CsvExtractor {
     private static final Session NO_SESSION = null;
     private static final String CASE_INSENSITIVE_CSV_REGEX = ".+\\.[cC][sS][vV]$";
-    private static final Logger LOG = LogManager.getLogger(MailParser.class);
+    private static final Logger LOG = LogManager.getLogger(CsvExtractor.class);
     private final MimeMessage msg;
 
     /**
@@ -32,7 +32,7 @@ public class MailParser {
      * @param is The input stream.
      * @throws MessagingException if the email is corrupt in some way.
      */
-    public MailParser(InputStream is) throws MessagingException {
+    public CsvExtractor(InputStream is) throws MessagingException {
         msg = new MimeMessage(NO_SESSION, is);
     }
 

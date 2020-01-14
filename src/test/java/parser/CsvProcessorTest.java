@@ -19,27 +19,27 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import model.PscDiscrepancySurvey;
-import parser.PscDiscrepancySurveyCsvProcessor.PscDiscrepancyCreatedListener;
+import parser.CsvProcessor.CsvProcessorListener;
 
 @ExtendWith(MockitoExtension.class)
-class PscDiscrepancySurveyCsvProcessorTest {
+class CsvProcessorTest {
     @Mock
-    private PscDiscrepancyCreatedListener listener;
+    private CsvProcessorListener listener;
 
     @Captor
     private ArgumentCaptor<PscDiscrepancySurvey> PscDiscrepancySurveyArg;
 
-    private PscDiscrepancySurveyCsvProcessorFactory factory;
+    private CsvProcessorFactory factory;
 
     @BeforeEach
     void setup() {
-        factory = new PscDiscrepancySurveyCsvProcessorFactory();
+        factory = new CsvProcessorFactory();
     }
 
     @Test
     void emptyFileMustFailToParse() throws IOException {
         byte[] bytes = getFile("src/test/resources/empty.csv");
-        PscDiscrepancySurveyCsvProcessor parser =
+        CsvProcessor parser =
                         factory.createPscDiscrepancySurveyCsvProcessor(bytes, listener);
         assertFalse(parser.parseRecords());
     }
@@ -47,7 +47,7 @@ class PscDiscrepancySurveyCsvProcessorTest {
     @Test
     void csvFileWithTooFewHeadersMustFailToParse() throws IOException {
         byte[] bytes = getFile("src/test/resources/tooFewHeaders.csv");
-        PscDiscrepancySurveyCsvProcessor parser =
+        CsvProcessor parser =
                         factory.createPscDiscrepancySurveyCsvProcessor(bytes, listener);
         assertFalse(parser.parseRecords());
     }
@@ -55,7 +55,7 @@ class PscDiscrepancySurveyCsvProcessorTest {
     @Test
     void csvFileWithOnlyHeadersMustFailToParse() throws IOException {
         byte[] bytes = getFile("src/test/resources/onlyHeaders.csv");
-        PscDiscrepancySurveyCsvProcessor parser =
+        CsvProcessor parser =
                         factory.createPscDiscrepancySurveyCsvProcessor(bytes, listener);
         assertFalse(parser.parseRecords());
     }
@@ -63,7 +63,7 @@ class PscDiscrepancySurveyCsvProcessorTest {
     @Test
     void csvRecordWithTooFewColumnsMustFailToParse() throws IOException {
         byte[] bytes = getFile("src/test/resources/tooFewColumns.csv");
-        PscDiscrepancySurveyCsvProcessor parser =
+        CsvProcessor parser =
                         factory.createPscDiscrepancySurveyCsvProcessor(bytes, listener);
         assertFalse(parser.parseRecords());
     }
@@ -71,7 +71,7 @@ class PscDiscrepancySurveyCsvProcessorTest {
     @Test
     void csvRecordWithTooManyColumnsMustFailToParse() throws IOException {
         byte[] bytes = getFile("src/test/resources/tooManyColumns.csv");
-        PscDiscrepancySurveyCsvProcessor parser =
+        CsvProcessor parser =
                         factory.createPscDiscrepancySurveyCsvProcessor(bytes, listener);
         assertFalse(parser.parseRecords());
     }
@@ -79,7 +79,7 @@ class PscDiscrepancySurveyCsvProcessorTest {
     @Test
     void badDiscrepancyIdentifiedOnMustFailToParse() throws IOException {
         byte[] bytes = getFile("src/test/resources/badDate.csv");
-        PscDiscrepancySurveyCsvProcessor parser =
+        CsvProcessor parser =
                         factory.createPscDiscrepancySurveyCsvProcessor(bytes, listener);
         assertFalse(parser.parseRecords());
     }
@@ -88,8 +88,8 @@ class PscDiscrepancySurveyCsvProcessorTest {
         byte[] bytes = getFile("src/test/resources/oneGoodRecord.csv");
         PscDiscrepancySurvey expected = readSurvey("src/test/resources/oneGoodRecord.json");
         when(listener.created(expected)).thenReturn(true);
-        PscDiscrepancySurveyCsvProcessor parser =
-                        new PscDiscrepancySurveyCsvProcessor(bytes, listener);
+        CsvProcessor parser =
+                        new CsvProcessor(bytes, listener);
         assertTrue(parser.parseRecords());
     }
 
@@ -98,7 +98,7 @@ class PscDiscrepancySurveyCsvProcessorTest {
         byte[] bytes = getFile("src/test/resources/escapedCommas.csv");
         PscDiscrepancySurvey expected = readSurvey("src/test/resources/escapedCommas.json");
         when(listener.created(expected)).thenReturn(true);
-        PscDiscrepancySurveyCsvProcessor parser =
+        CsvProcessor parser =
                         factory.createPscDiscrepancySurveyCsvProcessor(bytes, listener);
         assertTrue(parser.parseRecords());
     }
@@ -108,7 +108,7 @@ class PscDiscrepancySurveyCsvProcessorTest {
         byte[] bytes = getFile("src/test/resources/escapedQuotes.csv");
         PscDiscrepancySurvey expected = readSurvey("src/test/resources/escapedQuotes.json");
         when(listener.created(expected)).thenReturn(true);
-        PscDiscrepancySurveyCsvProcessor parser =
+        CsvProcessor parser =
                         factory.createPscDiscrepancySurveyCsvProcessor(bytes, listener);
         assertTrue(parser.parseRecords());
     }
@@ -118,7 +118,7 @@ class PscDiscrepancySurveyCsvProcessorTest {
         byte[] bytes = getFile("src/test/resources/quotedNewlines.csv");
         PscDiscrepancySurvey expected = readSurvey("src/test/resources/quotedNewlines.json");
         when(listener.created(expected)).thenReturn(true);
-        PscDiscrepancySurveyCsvProcessor parser =
+        CsvProcessor parser =
                         factory.createPscDiscrepancySurveyCsvProcessor(bytes, listener);
         assertTrue(parser.parseRecords());
     }
@@ -126,7 +126,7 @@ class PscDiscrepancySurveyCsvProcessorTest {
     @Test
     void badCsvMustFailToParse() throws IOException {
         byte[] bytes = getFile("src/test/resources/badCsv.csv");
-        PscDiscrepancySurveyCsvProcessor parser =
+        CsvProcessor parser =
                         factory.createPscDiscrepancySurveyCsvProcessor(bytes, listener);
         assertFalse(parser.parseRecords());
     }
@@ -136,7 +136,7 @@ class PscDiscrepancySurveyCsvProcessorTest {
         byte[] bytes = getFile("src/test/resources/quotedNewlines.csv");
         PscDiscrepancySurvey expected = readSurvey("src/test/resources/quotedNewlines.json");
         when(listener.created(expected)).thenReturn(false);
-        PscDiscrepancySurveyCsvProcessor parser =
+        CsvProcessor parser =
                         factory.createPscDiscrepancySurveyCsvProcessor(bytes, listener);
         assertFalse(parser.parseRecords());
     }

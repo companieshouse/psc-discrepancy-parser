@@ -12,9 +12,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import javax.mail.MessagingException;
 import model.PscDiscrepancySurvey;
-import parser.MailParser;
-import parser.PscDiscrepancySurveyCsvProcessor;
-import parser.PscDiscrepancySurveyCsvProcessor.PscDiscrepancyCreatedListener;
+import parser.CsvExtractor;
+import parser.CsvProcessor;
+import parser.CsvProcessor.CsvProcessorListener;
 
 /**
  * Utility to be used when examining bugs in the main code. Given a file that is an email, or a CSV,
@@ -46,7 +46,7 @@ public class SupportUtils {
      * Listener for PscDiscrepancySurvey created events, which prints each discrepancy survey to
      * stdout.
      */
-    private static class PscDiscrepancyDumpingListener implements PscDiscrepancyCreatedListener {
+    private static class PscDiscrepancyDumpingListener implements CsvProcessorListener {
         @Override
         public boolean created(PscDiscrepancySurvey discrepancy) {
             System.out.println(discrepancy);
@@ -110,7 +110,7 @@ public class SupportUtils {
     public static byte[] extractCsvFromEmail(String filename)
                     throws MessagingException, IOException {
         InputStream is = getFileInputStream(filename);
-        MailParser mp = new MailParser(is);
+        CsvExtractor mp = new CsvExtractor(is);
         return mp.extractCsvAttachment();
     }
 
@@ -123,7 +123,7 @@ public class SupportUtils {
      * @throws IOException
      */
     public static boolean processCsvAndDump(byte[] bytes) throws IOException {
-        PscDiscrepancySurveyCsvProcessor processor = new PscDiscrepancySurveyCsvProcessor(bytes,
+        CsvProcessor processor = new CsvProcessor(bytes,
                         new PscDiscrepancyDumpingListener());
         return processor.parseRecords();
     }

@@ -1,0 +1,7 @@
+Take LambdaActivity.plantText and paste it into a PlantUML editor. This website has one that you can use:
+https://www.planttext.com
+1. Paste the text in the edit box
+2. Make your changes
+3. Click the refresh button
+4. Below the diagram, you will see an SVG link. Click that.
+5. Save the resulting page as design/LambdaActivity.svg

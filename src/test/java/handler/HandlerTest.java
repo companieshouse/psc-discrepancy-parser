@@ -26,10 +26,10 @@ import com.amazonaws.services.lambda.runtime.events.S3Event;
 import com.amazonaws.services.s3.event.S3EventNotification.S3EventNotificationRecord;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
-import parser.MailParser;
-import parser.MailParserFactory;
-import parser.PscDiscrepancySurveyCsvProcessor;
-import parser.PscDiscrepancySurveyCsvProcessorFactory;
+import parser.CsvExtractor;
+import parser.CsvExtractorFactory;
+import parser.CsvProcessor;
+import parser.CsvProcessorFactory;
 import service.AmazonS3Service;
 import uk.gov.companieshouse.environment.EnvironmentReader;
 
@@ -51,9 +51,9 @@ public class HandlerTest {
     @Mock
     private S3Event s3Event;
     @Mock
-    private MailParserFactory mailParserFactory;
+    private CsvExtractorFactory csvExtractorFactory;
     @Mock
-    private PscDiscrepancySurveyCsvProcessorFactory csvParserFactory;
+    private CsvProcessorFactory csvParserFactory;
     @Mock
     private S3EventNotificationRecord record;
     @Mock
@@ -65,11 +65,11 @@ public class HandlerTest {
     @Mock
     private S3Object s3Object;
     @Mock
-    private PscDiscrepancySurveyCsvProcessor csvParser;
+    private CsvProcessor csvParser;
     @Mock
     private S3ObjectInputStream s3ObjectInputStream;
     @Mock
-    private MailParser mailParser;
+    private CsvExtractor csvExtractor;
 
     @InjectMocks
     private Handler handler;
@@ -82,15 +82,15 @@ public class HandlerTest {
         when(amazonS3Service.getBucket(record)).thenReturn(BUCKET_NAME);
         when(amazonS3Service.getFileFromS3(BUCKET_NAME, SOURCE_FILE_NAME)).thenReturn(s3Object);
         when(s3Object.getObjectContent()).thenReturn(s3ObjectInputStream);
-        when(mailParserFactory.createMailParser(s3ObjectInputStream)).thenReturn(mailParser);
-        when(mailParser.extractCsvAttachment()).thenReturn(extractedCsv);
+        when(csvExtractorFactory.createMailParser(s3ObjectInputStream)).thenReturn(csvExtractor);
+        when(csvExtractor.extractCsvAttachment()).thenReturn(extractedCsv);
     }
 
     @Test
     @DisplayName("Successful upload of valid CSV file into accepted folder")
     void uploadValidCSV_Successful() throws IOException, MessagingException {
         when(csvParserFactory.createPscDiscrepancySurveyCsvProcessor(any(),
-                        any(PscDiscrepancyFoundListenerImpl.class))).thenReturn(csvParser);
+                        any(PscDiscrepancySurveySender.class))).thenReturn(csvParser);
         when(csvParser.parseRecords()).thenReturn(true);
         String result = handler.handleRequest(s3Event, context);
         verify(amazonS3Service).moveFileInS3(argCaptor.capture());
@@ -105,7 +105,7 @@ public class HandlerTest {
     @DisplayName("Successful upload of invalid CSV file into rejected folder")
     void uploadInvalidCSV_Successful() throws IOException {
         when(csvParserFactory.createPscDiscrepancySurveyCsvProcessor(any(),
-                        any(PscDiscrepancyFoundListenerImpl.class))).thenReturn(csvParser);
+                        any(PscDiscrepancySurveySender.class))).thenReturn(csvParser);
         when(csvParser.parseRecords()).thenReturn(false);
         String result = handler.handleRequest(s3Event, context);
         verify(amazonS3Service).moveFileInS3(argCaptor.capture());
@@ -119,7 +119,7 @@ public class HandlerTest {
     @Test
     @DisplayName("When attempting to extract csv attachment throw messaging exception")
     void throwMessagingExceptionWhenParsingMail() throws IOException, MessagingException {
-        when(mailParser.extractCsvAttachment()).thenThrow(new MessagingException());
+        when(csvExtractor.extractCsvAttachment()).thenThrow(new MessagingException());
 
         String result = handler.handleRequest(s3Event, context);
         verify(amazonS3Service).moveFileInS3(argCaptor.capture());
@@ -133,7 +133,7 @@ public class HandlerTest {
     @Test
     @DisplayName("When attempting to extract csv attachment throw messaging exception")
     void throwIOExceptionWhenParsingMail() throws IOException, MessagingException {
-        when(mailParser.extractCsvAttachment()).thenThrow(new IOException());
+        when(csvExtractor.extractCsvAttachment()).thenThrow(new IOException());
 
         String result = handler.handleRequest(s3Event, context);
         verify(amazonS3Service).moveFileInS3(argCaptor.capture());
