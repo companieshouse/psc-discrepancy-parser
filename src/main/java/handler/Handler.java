@@ -88,8 +88,7 @@ public class Handler implements RequestHandler<S3Event, String> {
                         + " is corrupt or missing attachment - moving to rejected folder", me);
                 putFile(s3Bucket, s3Key, REJECTED_FOLDER_PREFIX);
             } catch (IOException e) {
-                LOG.error("The attachment in the email: " + s3Key
-                        + " is not found - moving to the rejected folder");
+                LOG.error("The attachment in the email: {} is not found - moving to the rejected folder", s3Key);
                 putFile(s3Bucket, s3Key, REJECTED_FOLDER_PREFIX);
             }
         }
