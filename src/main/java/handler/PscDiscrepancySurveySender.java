@@ -1,9 +1,11 @@
 package handler;
 
 import java.io.IOException;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.logging.log4j.LogManager;
@@ -45,7 +47,7 @@ public class PscDiscrepancySurveySender implements CsvProcessorListener {
             LOG.info("Callback for discrepancy: {}", sanitisedJson);
             HttpPost httpPost = new HttpPost(postUrl);
             httpPost.setEntity(entity);
-            httpPost.setHeader("Content-type", "text/plain");
+            httpPost.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
             try (CloseableHttpResponse response = client.execute(httpPost)) {
                 if (response.getStatusLine().getStatusCode() == HttpStatus.SC_ACCEPTED) {
                     LOG.info("Successfully sent JSON");
