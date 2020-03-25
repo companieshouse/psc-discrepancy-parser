@@ -15,22 +15,13 @@ The Lambda will attempt to process a new file in `source` as follows:
 If any of these steps fail, the file is moved to the `rejected` folder. If all succeed, the file is moved to the `accepted` folder.
 
 ## Installation
-#### Running Terraform
-Terraform scripts would need to be run in order to set up the infrastructure for Lambda function. To run the scripts locally, the following command can be used:
+Always use Concourse to deploy.
 
-`./run-terraform -e <environment> -a <action>`
-
-__environment__ - the AWS environment to apply the action to. Allowed values:
-- dev
-- staging
-- live
-
-Note that you would not normally run this script locally for staging or live, as only Concourse should be targeting those environments, being triggered when code is merged to the appropriate branch.
-
-__action__ - the thing to accomplish. Allowed values:
-- plan
-- apply
-- destroy
+To deploy to live:
+1. go to the staging release bucket for psc-discrepancy-parser and copy the relevant artefact over to the same folder in live.
+2. Run live plan
+3. If that succeeds, run live apply.
+4. Get someone to produce an email report with new discrepancy reports in it and see that they turn up in CHIPS.
 
 #### Design
 The Terraform scripts for the psc-discrepancy-parser Lambda function can be found within the terraform directory of the psc-discrepancy-parser repository.
@@ -56,9 +47,9 @@ There is not much usage to this. Using the Lambda amounts to installing it (see 
 
 ## Support
 ### The support process for dealing with a bug
-Until [FAML-180 Make new PSC Discrepancy Contact creation idempotent](https://companieshouse.atlassian.net/browse/FAML-180) is fixed, hold off on re-processing any emails that have, for whatever reason, failed to be processed by the Lambda. Once that JIRA is fixed, dealing with an issue in the Lambda should proceed as follows:
-1. Support should be alerted to an issue in the Lambda because an ERROR log was picked up by the AWS Cloudwatch for the Lambda's logs.
-1. Get hold of those logs. In the logs, you will find:
+An issue in the Lambda should proceed as follows:
+1. Support should be alerted to an issue in the Lambda because an ERROR log was picked up by the AWS Cloudwatch for the Lambda's logs, or because a user raised an incident.
+1. Get hold of the Lambda's logs. In the logs, you will find:
   1. The AWS request ID.
   1. The S3 key, bucket, and object.
   1. The email's Message-ID, Subject, and Date headers.
