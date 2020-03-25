@@ -15,7 +15,15 @@ The Lambda will attempt to process a new file in `source` as follows:
 If any of these steps fail, the file is moved to the `rejected` folder. If all succeed, the file is moved to the `accepted` folder.
 
 ## Installation
-#### Running Terraform
+Always use Concourse to deploy. To deploy to dev or staging, TODO:
+To deploy to live:
+1. go to the staging release bucket for psc-discrepancy-parser and copy the relevant artefact over to the same folder in live.
+2. Run live plan
+3. If that succeeds, run live apply.
+4. Get someone to produce an email report with new discrepancy reports in it and see that they turn up in CHIPS.
+
+#### OLD: Running Terraform
+*These notes appl
 *NOTE To provision the Lambda, S3 Bucket and SES rule, Terraform version 0.12.7 is required.*
 Terraform scripts would need to be run in order to set up the infrastructure for Lambda function. To run the scripts locally, the following command can be used:
 
