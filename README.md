@@ -16,6 +16,7 @@ If any of these steps fail, the file is moved to the `rejected` folder. If all s
 
 ## Installation
 #### Running Terraform
+*NOTE To provision the Lambda, S3 Bucket and SES rule, Terraform version 0.12.7 is required.*
 Terraform scripts would need to be run in order to set up the infrastructure for Lambda function. To run the scripts locally, the following command can be used:
 
 `./run-terraform -e <environment> -a <action>`
@@ -31,6 +32,45 @@ __action__ - the thing to accomplish. Allowed values:
 - plan
 - apply
 - destroy
+
+#### Provisioning to live
+The user running the Terraform scripts would need to have permissions for the following in Live:
+* Add a receipt rule in SES
+* Create an S3 Bucket and a policy to the bucket along with making the bucket private
+* Create a Lambda Function
+* Create role with in-line policies for the Lambda function
+* Set security groups for Lambda function
+
+All of the Lambda function’s infrastructure requirements are defined within the Terraform scripts that are found within the terraform folder. The folder also consists of helper scripts in order to provision the environment via the execution of the Terraform scripts. The user running the scripts would need permissions for completing all the tasks listed above.
+
+Variables for the live environment would need to be created and would need to contain the following:
+
+```
+aws_bucket = "<bucket for storing the psc-discrepancy-parser state file>"
+aws_region = "<region for Lambda and s3 bucket>"
+aws_ses_region = "<region for ses, should be eu-west-1>"
+environment = "live"
+deploy_to = "live"
+state_prefix = "<prefix for where statefile will be stored in s3>"
+psc_discrepancy_bucket = "<bucket name for PSC discrepancy report storage in live>"
+workspace_key_prefix = "psc-discrepancy-parser"
+state_file_name = "psc-discrepancy-parser.tfstate"
+release_bucket_name = "<live release bucket>"
+psc_email_recipient = "pscdiscrepancyreport@pscdiscrepancyreport.companieshouse.gov.uk"
+psc_discrepancy_bucket_prefix = "source/"
+rule_set_name = "<ses rule set name in live>"
+chips_rest_interface_endpoint = "<URL for live CHIPS REST interfaces>"
+vpc_id = {eu-west-2 = "<VPC ID for live>"}
+```
+The following commands would then need to be executed:
+
+```
+./run-terraform -e live -a plan
+```
+10 additions should be made. If the output of the plan is successful, then the following should be executed:
+```
+./run-terraform -e live -a apply
+```
 
 #### Design
 The Terraform scripts for the psc-discrepancy-parser Lambda function can be found within the terraform directory of the psc-discrepancy-parser repository.
@@ -56,9 +96,9 @@ There is not much usage to this. Using the Lambda amounts to installing it (see 
 
 ## Support
 ### The support process for dealing with a bug
-Until [FAML-180 Make new PSC Discrepancy Contact creation idempotent](https://companieshouse.atlassian.net/browse/FAML-180) is fixed, hold off on re-processing any emails that have, for whatever reason, failed to be processed by the Lambda. Once that JIRA is fixed, dealing with an issue in the Lambda should proceed as follows:
-1. Support should be alerted to an issue in the Lambda because an ERROR log was picked up by the AWS Cloudwatch for the Lambda's logs.
-1. Get hold of those logs. In the logs, you will find:
+An issue in the Lambda should proceed as follows:
+1. Support should be alerted to an issue in the Lambda because an ERROR log was picked up by the AWS Cloudwatch for the Lambda's logs, or because a user raised an incident.
+1. Get hold of the Lambda's logs. In the logs, you will find:
   1. The AWS request ID.
   1. The S3 key, bucket, and object.
   1. The email's Message-ID, Subject, and Date headers.
