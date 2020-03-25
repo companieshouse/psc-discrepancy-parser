@@ -15,70 +15,13 @@ The Lambda will attempt to process a new file in `source` as follows:
 If any of these steps fail, the file is moved to the `rejected` folder. If all succeed, the file is moved to the `accepted` folder.
 
 ## Installation
-Always use Concourse to deploy. To deploy to dev or staging, TODO:
+Always use Concourse to deploy.
+
 To deploy to live:
 1. go to the staging release bucket for psc-discrepancy-parser and copy the relevant artefact over to the same folder in live.
 2. Run live plan
 3. If that succeeds, run live apply.
 4. Get someone to produce an email report with new discrepancy reports in it and see that they turn up in CHIPS.
-
-#### OLD: Running Terraform
-*These notes appl
-*NOTE To provision the Lambda, S3 Bucket and SES rule, Terraform version 0.12.7 is required.*
-Terraform scripts would need to be run in order to set up the infrastructure for Lambda function. To run the scripts locally, the following command can be used:
-
-`./run-terraform -e <environment> -a <action>`
-
-__environment__ - the AWS environment to apply the action to. Allowed values:
-- dev
-- staging
-- live
-
-Note that you would not normally run this script locally for staging or live, as only Concourse should be targeting those environments, being triggered when code is merged to the appropriate branch.
-
-__action__ - the thing to accomplish. Allowed values:
-- plan
-- apply
-- destroy
-
-#### Provisioning to live
-The user running the Terraform scripts would need to have permissions for the following in Live:
-* Add a receipt rule in SES
-* Create an S3 Bucket and a policy to the bucket along with making the bucket private
-* Create a Lambda Function
-* Create role with in-line policies for the Lambda function
-* Set security groups for Lambda function
-
-All of the Lambda function’s infrastructure requirements are defined within the Terraform scripts that are found within the terraform folder. The folder also consists of helper scripts in order to provision the environment via the execution of the Terraform scripts. The user running the scripts would need permissions for completing all the tasks listed above.
-
-Variables for the live environment would need to be created and would need to contain the following:
-
-```
-aws_bucket = "<bucket for storing the psc-discrepancy-parser state file>"
-aws_region = "<region for Lambda and s3 bucket>"
-aws_ses_region = "<region for ses, should be eu-west-1>"
-environment = "live"
-deploy_to = "live"
-state_prefix = "<prefix for where statefile will be stored in s3>"
-psc_discrepancy_bucket = "<bucket name for PSC discrepancy report storage in live>"
-workspace_key_prefix = "psc-discrepancy-parser"
-state_file_name = "psc-discrepancy-parser.tfstate"
-release_bucket_name = "<live release bucket>"
-psc_email_recipient = "pscdiscrepancyreport@pscdiscrepancyreport.companieshouse.gov.uk"
-psc_discrepancy_bucket_prefix = "source/"
-rule_set_name = "<ses rule set name in live>"
-chips_rest_interface_endpoint = "<URL for live CHIPS REST interfaces>"
-vpc_id = {eu-west-2 = "<VPC ID for live>"}
-```
-The following commands would then need to be executed:
-
-```
-./run-terraform -e live -a plan
-```
-10 additions should be made. If the output of the plan is successful, then the following should be executed:
-```
-./run-terraform -e live -a apply
-```
 
 #### Design
 The Terraform scripts for the psc-discrepancy-parser Lambda function can be found within the terraform directory of the psc-discrepancy-parser repository.
