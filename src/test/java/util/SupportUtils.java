@@ -11,6 +11,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import javax.mail.MessagingException;
+
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import handler.PscDiscrepancySurveySender;
 import model.PscDiscrepancySurvey;
 import parser.CsvExtractor;
 import parser.CsvProcessor;
@@ -38,6 +45,11 @@ import parser.CsvProcessor.CsvProcessorListener;
 * byte[] csvBytes = getBytesFromFile(pathToCsv);
 * processCsvAndDump(csvBytes);
 * }
+* // Read a CSV file, parse it, turning each CSV record into
+* // JSON, posting that JSON to postUri
+* String postUri = "http://some.host/some/path";
+* byte[] csvBytes = getBytesFromFile(pathToCsv);
+* processCsvAndPost(csvBytes, postUri);
 * </code>
  * </pre>
  */
@@ -126,6 +138,26 @@ public class SupportUtils {
         CsvProcessor processor = new CsvProcessor(bytes,
                         new PscDiscrepancyDumpingListener());
         return processor.parseRecords();
+    }
+
+    /**
+     * Given a byte[] bytes, attempt to parse those bytes as CSV, transforming each record into
+     * JSON, separately posting that JSON to postUri.
+     * @param bytes
+     * @param postUri
+     * @return
+     * @throws IOException
+     */
+    public static boolean processCsvAndPost(byte[] bytes, String postUri) throws IOException {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            String fakeRequestId = "" + System.currentTimeMillis();
+            System.out.println("About to process CSV and assign requestId: " + fakeRequestId);
+            PscDiscrepancySurveySender listener =
+                    new PscDiscrepancySurveySender(httpClient, postUri,
+                            new ObjectMapper(), fakeRequestId);
+            CsvProcessor processor = new CsvProcessor(bytes, listener);
+            return processor.parseRecords();
+        }
     }
 
     /**
