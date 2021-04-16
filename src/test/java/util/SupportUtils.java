@@ -11,6 +11,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import javax.mail.MessagingException;
+
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import handler.PscDiscrepancySurveySender;
 import model.PscDiscrepancySurvey;
 import parser.CsvExtractor;
 import parser.CsvProcessor;
@@ -28,16 +35,21 @@ import parser.CsvProcessor.CsvProcessorListener;
 * // Extract CSV attachment from email, print out the CSV to stdout, foreach CSV record,
 * // turn it into JSON, printing out that JSON
 * // and each JSON record
-* extractCsvProcessAndDump(pathToEmail);
+*   extractCsvProcessAndDump(pathToEmail);
 * 
 * // Extract CSV attachment from email, print out the CSV to stdout
-* extractCsvFromEmailAndDump(pathToEmail);
+*   extractCsvFromEmailAndDump(pathToEmail);
 * 
-* // Read a CSV file, parse it, turning each CSV record into
-* // JSON, printing out that JSON
-* byte[] csvBytes = getBytesFromFile(pathToCsv);
-* processCsvAndDump(csvBytes);
+* // Read a CSV file, parse it, turning each CSV record into JSON, printing out that JSON
+*
+*   byte[] csvBytes = getBytesFromFile(pathToCsv);
+*   processCsvAndDump(csvBytes);
 * }
+* // Read a CSV file, parse it, turning each CSV record into
+* // JSON, posting that JSON to postUri
+*   String postUri = "http://some.host/some/path";
+*   byte[] csvBytes = getBytesFromFile(pathToCsv);
+*   processCsvAndPost(csvBytes, postUri);
 * </code>
  * </pre>
  */
@@ -58,9 +70,10 @@ public class SupportUtils {
     public static void main(String[] args) {
         try {
             // An example. See Javadocs for what to replace this with.
-            String csvPath = "src/test/resources/oneGoodRecord.csv";
+            String csvPath = "src/test/resources/firstFullSubmission.csv";
+            String chipsRestPath = "http://localhost:7001/chips-restService/rest/chipsgeneric/pscDiscrepancies";
             byte[] cvsvBytesFromFile = getBytesFromFile(csvPath);
-            processCsvAndDump(cvsvBytesFromFile);
+            processCsvAndPost(cvsvBytesFromFile, chipsRestPath);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -129,7 +142,27 @@ public class SupportUtils {
     }
 
     /**
-     * Given the path to a file, return an InputStream for that file.
+     * Given a byte[] bytes, attempt to parse those bytes as CSV, transforming each record into
+     * JSON, separately posting that JSON to postUri.
+     * @param bytes
+     * @param postUri
+     * @return
+     * @throws IOException
+     */
+    public static boolean processCsvAndPost(byte[] bytes, String postUri) throws IOException {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            String generatedRequestId = "" + System.currentTimeMillis();
+            System.out.println("About to process CSV and assign requestId: " + generatedRequestId);
+            PscDiscrepancySurveySender listener =
+                    new PscDiscrepancySurveySender(httpClient, postUri,
+                            new ObjectMapper(), generatedRequestId);
+            CsvProcessor processor = new CsvProcessor(bytes, listener);
+            return processor.parseRecords();
+        }
+    }
+
+    /**
+     * Given the path to a file, return an InputStream for that file‹.
      * 
      * @param filename
      * @return
