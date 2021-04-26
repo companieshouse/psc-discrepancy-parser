@@ -37,7 +37,7 @@
         <commons-csv.version>1.7</commons-csv.version>
         <javax.mail.version>1.6.2</javax.mail.version>
         <commons-lang3.version>3.9</commons-lang3.version>
-        <commons-io.version>2.6</commons-io.version>
+        <commons-io.version>2.7</commons-io.version>
 
         <!-- JUnit testing -->
         <junit-jupiter-engine.version>5.2.0</junit-jupiter-engine.version>
