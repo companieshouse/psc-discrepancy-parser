@@ -1,9 +1,9 @@
 resource "aws_s3_bucket" "psc_discrepancy_report_bucket" {
-    bucket = "${var.psc_discrepancy_bucket}"
+    bucket = var.psc_discrepancy_bucket
 }
 
 resource "aws_s3_bucket_policy" "allow_ses_access" {
-    bucket = "${aws_s3_bucket.psc_discrepancy_report_bucket.id}"
+    bucket = aws_s3_bucket.psc_discrepancy_report_bucket.id
 
     policy = <<POLICY
 {
@@ -25,7 +25,7 @@ POLICY
 }
 
 resource "aws_s3_bucket_public_access_block" "block_public_access" {
-    bucket = "${aws_s3_bucket.psc_discrepancy_report_bucket.id}"
+    bucket = aws_s3_bucket.psc_discrepancy_report_bucket.id
 
     block_public_acls = true
     block_public_policy = true

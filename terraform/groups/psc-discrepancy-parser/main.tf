@@ -1,10 +1,10 @@
 provider "aws" {
-  region = "${var.aws_region}"
+  region = var.aws_region
 }
 
 provider "aws" {
   alias = "ses_region"
-  region = "${var.aws_ses_region}"
+  region = var.aws_ses_region
 }
 
 terraform {
@@ -60,7 +60,7 @@ module "lambda-roles" {
 
 module "ses" {
     source                          = "./module-ses"
-    providers                       = {aws = "aws.ses_region"}
+    providers                       = {aws = aws.ses_region}
     psc_discrepancy_bucket          = "${var.psc_discrepancy_bucket}"
     psc_discrepancy_bucket_prefix   = "${var.psc_discrepancy_bucket_prefix}"
     psc_email_recipient             = "${var.psc_email_recipient}"
