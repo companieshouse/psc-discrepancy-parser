@@ -79,7 +79,7 @@ data "aws_iam_policy_document" "psc_discrepancy_parser_execution" {
 # ------------------------------------------------------------------------------
 resource "aws_iam_role" "psc_discrepancy_parser_execution" {
   name               = "psc-discrepancy-parser-execution"
-  assume_role_policy = "${data.aws_iam_policy_document.psc_discrepancy_parser_trust.json}"
+  assume_role_policy = data.aws_iam_policy_document.psc_discrepancy_parser_trust.json
 }
 
 # ------------------------------------------------------------------------------
@@ -87,10 +87,10 @@ resource "aws_iam_role" "psc_discrepancy_parser_execution" {
 # ------------------------------------------------------------------------------
 resource "aws_iam_role_policy" "psc_discrepancy_parser_execution" {
   name   = "psc-discrepancy-parser-execution"
-  role   = "${aws_iam_role.psc_discrepancy_parser_execution.id}"
-  policy = "${data.aws_iam_policy_document.psc_discrepancy_parser_execution.json}"
+  role   = aws_iam_role.psc_discrepancy_parser_execution.id
+  policy = data.aws_iam_policy_document.psc_discrepancy_parser_execution.json
 }
 
 output "execution_role" {
-  value = "${aws_iam_role.psc_discrepancy_parser_execution.arn}"
+  value = aws_iam_role.psc_discrepancy_parser_execution.arn
 }
