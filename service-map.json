@@ -1,0 +1,16 @@
+{
+    "type": "Service",
+    "name": "psc-discrepancy-parser",
+    "description": "This AWS Lambda service processes batches of CSV-format survey results (each survey gathered discrepancies with a company's Person(s) of Significant Control (PSC)), transforming a survey (in the form of a CSV record) into JSON and sending it to CHIPS.",
+    "owned_by": "Titans",
+    "git_repo": "https://github.com/companieshouse/psc-discrepancy-parser",        
+    "users":"Obligied Entities",    
+    "code_analysis_link": "http://code-analysis.platform.aws.chdev.org:9000/dashboard?id=uk.gov.companieshouse%3Apsc-discrepancy-parser#",    
+    "service_area": "Intelligence and Enforcement",
+    "service_component": "AML",
+    "language": "Java",
+    "integration_outgoing": [
+      "chips-rest-interface,CALLS_API",
+      "source/live-eu-west-2.terraform-state.ch.gov.uk,ADDS_FILES_TO"
+    ]
+  }
